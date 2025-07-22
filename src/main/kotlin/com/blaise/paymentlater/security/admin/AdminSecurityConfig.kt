@@ -1,5 +1,6 @@
-package com.blaise.paymentlater.security.merchant
+package com.blaise.paymentlater.security.admin
 
+import com.blaise.paymentlater.domain.enums.UserRole
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
@@ -11,15 +12,15 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
-@Order(1)
-class MerchantSecurityConfig(
-    private val apiKeyAuthFilter: ApiKeyAuthFilter
+@Order(2)
+class AdminSecurityConfig(
+    private val jwtAuthFilter: JwtAuthFilter
 ) {
 
     @Bean
-    fun merchantFilterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
+    fun adminFilterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
         return httpSecurity
-            .securityMatcher("/api/v1/merchant/**")
+            .securityMatcher("/api/v1/admin/**")
             .csrf { csrf -> csrf.disable() }
             .sessionManagement { session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -27,18 +28,17 @@ class MerchantSecurityConfig(
             .authorizeHttpRequests { authorize ->
                 authorize
                     .requestMatchers(
-                    "/api/v1/merchant/auth/register",
-                    "/api/v1/merchant/auth/regenerate-api-key"
-                )
-                    .permitAll()
-                    .anyRequest().authenticated()
+                        "/api/v1/admin/auth/login",
+                        "/api/v1/admin/auth/register"
+                    ).permitAll()
+                    .anyRequest().hasRole(UserRole.ADMIN.name)
             }
             .exceptionHandling { configurer ->
                 configurer.authenticationEntryPoint(
                     HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
                 )
             }
-            .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }
 }

@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.security.merchant
 
-import com.blaise.paymentlater.service.MerchantService
+import com.blaise.paymentlater.service.v1.merchant.MerchantServiceV1
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -13,7 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class ApiKeyAuthFilter(
     private val apiKeyConfig: ApiKeyConfig,
-    private val merchantService: MerchantService
+    private val merchantService: MerchantServiceV1
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(

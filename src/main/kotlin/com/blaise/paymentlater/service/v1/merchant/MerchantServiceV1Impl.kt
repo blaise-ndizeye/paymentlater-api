@@ -1,4 +1,4 @@
-package com.blaise.paymentlater.service
+package com.blaise.paymentlater.service.v1.merchant
 
 import com.blaise.paymentlater.domain.extension.toMerchantResponseDto
 import com.blaise.paymentlater.domain.model.Merchant
@@ -12,13 +12,13 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Service
-class MerchantService(
+class MerchantServiceV1Impl(
     private val merchantRepository: MerchantRepository,
     private val apiKeyConfig: ApiKeyConfig
-) {
+) : MerchantServiceV1 {
 
     private fun generateUniqueApiKey(): String {
         var key: String
@@ -28,7 +28,7 @@ class MerchantService(
         return key
     }
 
-    fun register(body: MerchantRegisterRequestDto): MerchantResponseDto {
+    override fun register(body: MerchantRegisterRequestDto): MerchantResponseDto {
         val merchantExists = existsByEmail(body.email)
         if (merchantExists)
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already exists")
@@ -39,20 +39,20 @@ class MerchantService(
             apiKey = generateUniqueApiKey()
         )
         return merchantRepository.save(newMerchant).toMerchantResponseDto().also {
-            logger.info { "Merchant registered: ${it.id}" }
+            log.info { "Merchant registered: ${it.id}" }
         }
     }
 
-    fun findByEmail(email: String): Merchant = merchantRepository.findByEmail(email)
+    override fun findByEmail(email: String): Merchant = merchantRepository.findByEmail(email)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Merchant not found")
 
-    fun findByApiKey(apiKey: String): Merchant? = merchantRepository.findByApiKey(apiKey)
+    override fun findByApiKey(apiKey: String): Merchant? = merchantRepository.findByApiKey(apiKey)
 
-    fun existsByEmail(email: String): Boolean = merchantRepository.existsByEmail(email)
+    override fun existsByEmail(email: String): Boolean = merchantRepository.existsByEmail(email)
 
-    fun existsByApiKey(apiKey: String): Boolean = merchantRepository.existsByApiKey(apiKey)
+    override fun existsByApiKey(apiKey: String): Boolean = merchantRepository.existsByApiKey(apiKey)
 
-    fun getAuthenticatedMerchant(): Merchant {
+    override fun getAuthenticatedMerchant(): Merchant {
         val principal = SecurityContextHolder.getContext().authentication.principal
         if (principal !is Merchant)
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)

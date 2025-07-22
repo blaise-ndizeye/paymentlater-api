@@ -7,24 +7,17 @@ import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@Document("merchants")
-data class Merchant(
+@Document("admins")
+data class Admin(
     @Id
     val id: ObjectId = ObjectId(),
 
-    val name: String,
-
     @Indexed(unique = true)
-    val email: String,
+    val username: String,
 
-    @Indexed(unique = true)
-    val apiKey: String,
+    val password: String,
 
-    val webhookUrl: String? = null,
-
-    val isActive: Boolean = true,
-
-    val roles: Set<UserRole> = setOf(UserRole.MERCHANT),
+    val roles: Set<UserRole> = setOf(UserRole.ADMIN),
 
     val createdAt: Instant = Instant.now()
 )

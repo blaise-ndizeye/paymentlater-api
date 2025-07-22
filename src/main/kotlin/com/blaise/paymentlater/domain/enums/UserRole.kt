@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.domain.enums
 
-enum class Role {
+enum class UserRole {
     MERCHANT,
     ADMIN
 }
