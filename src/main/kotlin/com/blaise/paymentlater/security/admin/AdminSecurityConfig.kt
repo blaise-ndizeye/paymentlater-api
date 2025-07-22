@@ -29,7 +29,8 @@ class AdminSecurityConfig(
                 authorize
                     .requestMatchers(
                         "/api/v1/admin/auth/login",
-                        "/api/v1/admin/auth/register"
+                        "/api/v1/admin/auth/register",
+                        "/api/v1/admin/auth/refresh-token"
                     ).permitAll()
                     .anyRequest().hasRole(UserRole.ADMIN.name)
             }

@@ -31,7 +31,7 @@ class MerchantServiceV1Impl(
     override fun register(body: MerchantRegisterRequestDto): MerchantResponseDto {
         val merchantExists = existsByEmail(body.email)
         if (merchantExists)
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already exists")
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "User already exists")
 
         val newMerchant = Merchant(
             name = body.name,

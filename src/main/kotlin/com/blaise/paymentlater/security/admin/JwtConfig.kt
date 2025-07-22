@@ -52,11 +52,11 @@ class JwtConfig(
 
     fun extractFrom(request: HttpServletRequest): String? = request.getHeader(headerName)
 
-    fun generateAccessToken(userId: String): String =
-        generateToken(userId, TokenType.ACCESS, accessTokenValidityMillis)
+    fun generateAccessToken(username: String): String =
+        generateToken(username, TokenType.ACCESS, accessTokenValidityMillis)
 
-    fun generateRefreshToken(userId: String): String =
-        generateToken(userId, TokenType.REFRESH, refreshTokenValidityMillis)
+    fun generateRefreshToken(username: String): String =
+        generateToken(username, TokenType.REFRESH, refreshTokenValidityMillis)
 
     fun validateAccessToken(token: String): Boolean {
         val claims = parseAllClaims(token) ?: return false

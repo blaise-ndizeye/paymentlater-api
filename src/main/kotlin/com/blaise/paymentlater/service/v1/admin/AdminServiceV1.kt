@@ -13,6 +13,8 @@ interface AdminServiceV1 {
 
     fun getAuthenticatedAdmin(): Admin
 
+    fun refreshToken(oldRefreshToken: String): TokenResponseDto
+
     fun findByUsername(username: String): Admin
 
     fun existsByUsername(username: String): Boolean

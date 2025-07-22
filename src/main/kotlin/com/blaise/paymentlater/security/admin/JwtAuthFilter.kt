@@ -19,6 +19,7 @@ class JwtAuthFilter(
     private val jwtConfig: JwtConfig,
     private val adminService: AdminServiceV1
 ) : OncePerRequestFilter() {
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,

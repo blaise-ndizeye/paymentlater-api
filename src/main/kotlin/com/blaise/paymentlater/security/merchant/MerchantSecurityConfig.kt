@@ -1,5 +1,6 @@
 package com.blaise.paymentlater.security.merchant
 
+import com.blaise.paymentlater.domain.enums.UserRole
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
@@ -31,7 +32,7 @@ class MerchantSecurityConfig(
                     "/api/v1/merchant/auth/regenerate-api-key"
                 )
                     .permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest().hasRole(UserRole.MERCHANT.name)
             }
             .exceptionHandling { configurer ->
                 configurer.authenticationEntryPoint(

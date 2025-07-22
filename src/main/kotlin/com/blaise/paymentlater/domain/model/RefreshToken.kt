@@ -12,5 +12,5 @@ data class RefreshToken(
     val userId: ObjectId,
     val token: String, // Hashed JWT
     @Indexed(expireAfter = "0s") val expiresAt: Instant,
-    val createdBy: Instant = Instant.now()
+    val createdAt: Instant = Instant.now()
 )
