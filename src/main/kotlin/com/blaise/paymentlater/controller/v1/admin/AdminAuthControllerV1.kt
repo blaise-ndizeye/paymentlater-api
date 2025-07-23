@@ -1,6 +1,5 @@
 package com.blaise.paymentlater.controller.v1.admin
 
-import com.blaise.paymentlater.domain.enums.UserRole
 import com.blaise.paymentlater.domain.extension.toAdminResponseDto
 import com.blaise.paymentlater.domain.model.Admin
 import com.blaise.paymentlater.dto.request.AdminLoginRequestDto

@@ -35,7 +35,8 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+    testImplementation("io.mockk:mockk:1.13.7")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.springframework.security:spring-security-test")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
@@ -50,6 +51,7 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs( "-XX:+EnableDynamicAgentLoading")
 }
 
 tasks.test {
