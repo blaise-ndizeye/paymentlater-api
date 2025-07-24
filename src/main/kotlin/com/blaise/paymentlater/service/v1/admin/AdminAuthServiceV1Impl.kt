@@ -20,12 +20,12 @@ import org.springframework.web.server.ResponseStatusException
 private val log = KotlinLogging.logger {}
 
 @Service
-class AdminServiceV1Impl(
+class AdminAuthServiceV1Impl(
     private val adminRepository: AdminRepository,
     private val hashEncoderConfig: HashEncoderConfig,
     private val jwtConfig: JwtConfig,
     private val refreshTokenService: RefreshTokenService
-) : AdminServiceV1 {
+) : AdminAuthServiceV1 {
 
     override fun login(body: AdminLoginRequestDto): TokenResponseDto {
         val admin = findByUsername(body.username)

@@ -6,7 +6,7 @@ import com.blaise.paymentlater.dto.request.AdminLoginRequestDto
 import com.blaise.paymentlater.dto.response.AdminResponseDto
 import com.blaise.paymentlater.dto.response.TokenResponseDto
 
-interface AdminServiceV1 {
+interface AdminAuthServiceV1 {
     fun login(body: AdminLoginRequestDto): TokenResponseDto
 
     fun register(body: AdminRegisterRequestDto): AdminResponseDto

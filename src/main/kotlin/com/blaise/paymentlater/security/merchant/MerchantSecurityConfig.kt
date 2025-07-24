@@ -28,11 +28,11 @@ class MerchantSecurityConfig(
             .authorizeHttpRequests { authorize ->
                 authorize
                     .requestMatchers(
-                    "/api/v1/merchant/auth/register",
-                    "/api/v1/merchant/auth/regenerate-api-key"
-                )
+                        "/api/v1/merchant/auth/register",
+                        "/api/v1/merchant/auth/regenerate-api-key"
+                    )
                     .permitAll()
-                    .anyRequest().hasRole(UserRole.MERCHANT.name)
+                    .anyRequest().authenticated()
             }
             .exceptionHandling { configurer ->
                 configurer.authenticationEntryPoint(

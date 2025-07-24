@@ -4,5 +4,6 @@ data class MerchantProfileResponseDto(
     val id: String,
     val name: String,
     val email: String,
-    val webhookUrl: String?
+    val webhookUrl: String?,
+    val createdAt: String
 )

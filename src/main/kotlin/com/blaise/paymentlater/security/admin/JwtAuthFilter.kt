@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.security.admin
 
-import com.blaise.paymentlater.service.v1.admin.AdminServiceV1
+import com.blaise.paymentlater.service.v1.admin.AdminAuthServiceV1
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -17,7 +17,7 @@ private val log = KotlinLogging.logger {}
 @Component
 class JwtAuthFilter(
     private val jwtConfig: JwtConfig,
-    private val adminService: AdminServiceV1
+    private val adminAuthService: AdminAuthServiceV1
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -30,7 +30,7 @@ class JwtAuthFilter(
         if (!authHeader.isNullOrBlank() && jwtConfig.validateAccessToken(authHeader)) {
             val username = jwtConfig.getUsernameFromToken(authHeader)
             val admin = try {
-                adminService.findByUsername(username)
+                adminAuthService.findByUsername(username)
             } catch (_: ResponseStatusException) {
                 log.warn { "Attempted to access invalid admin: $username" }
                 null

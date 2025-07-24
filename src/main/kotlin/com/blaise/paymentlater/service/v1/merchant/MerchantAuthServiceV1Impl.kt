@@ -4,21 +4,25 @@ import com.blaise.paymentlater.domain.extension.toMerchantResponseDto
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.MerchantRegisterRequestDto
 import com.blaise.paymentlater.dto.response.MerchantResponseDto
+import com.blaise.paymentlater.notification.MailService
 import com.blaise.paymentlater.repository.MerchantRepository
 import com.blaise.paymentlater.security.merchant.ApiKeyConfig
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 
 private val log = KotlinLogging.logger {}
 
 @Service
-class MerchantServiceV1Impl(
+class MerchantAuthServiceV1Impl(
     private val merchantRepository: MerchantRepository,
-    private val apiKeyConfig: ApiKeyConfig
-) : MerchantServiceV1 {
+    private val apiKeyConfig: ApiKeyConfig,
+    private val mailService: MailService
+) : MerchantAuthServiceV1 {
 
     private fun generateUniqueApiKey(): String {
         var key: String
@@ -57,5 +61,21 @@ class MerchantServiceV1Impl(
         if (principal !is Merchant)
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         return principal
+    }
+
+    @Transactional
+    override fun regenerateApiKey(email: String): ResponseEntity<Unit> {
+        val merchant = try {
+            findByEmail(email)
+        } catch (_: ResponseStatusException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credentials")
+        }
+
+        val newApiKey = generateUniqueApiKey()
+        val updatedMerchant = merchant.copy(apiKey = newApiKey)
+        merchantRepository.save(updatedMerchant)
+        mailService.sendApiKeyEmail(merchant.email, merchant.name, newApiKey)
+        log.info { "Merchant ${merchant.id} regenerated API key!" }
+        return ResponseEntity.ok().build()
     }
 }

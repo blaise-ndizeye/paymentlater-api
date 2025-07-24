@@ -7,7 +7,7 @@ import com.blaise.paymentlater.dto.request.AdminRegisterRequestDto
 import com.blaise.paymentlater.dto.request.RefreshTokenRequestDto
 import com.blaise.paymentlater.dto.response.AdminResponseDto
 import com.blaise.paymentlater.dto.response.TokenResponseDto
-import com.blaise.paymentlater.service.v1.admin.AdminServiceV1
+import com.blaise.paymentlater.service.v1.admin.AdminAuthServiceV1
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -20,22 +20,22 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/admin/auth")
 class AdminAuthControllerV1(
-    private val adminService: AdminServiceV1
+    private val adminAuthService: AdminAuthServiceV1
 ) {
 
     @PostMapping("/login")
     fun login(
         @Valid @RequestBody body: AdminLoginRequestDto
-    ): TokenResponseDto = adminService.login(body)
+    ): TokenResponseDto = adminAuthService.login(body)
 
     @PostMapping("/register")
     fun register(
         @Valid @RequestBody body: AdminRegisterRequestDto
-    ): AdminResponseDto = adminService.register(body)
+    ): AdminResponseDto = adminAuthService.register(body)
 
     @PostMapping("/refresh-token")
     fun refreshToken(@Valid @RequestBody body: RefreshTokenRequestDto): TokenResponseDto =
-        adminService.refreshToken(body.refreshToken)
+        adminAuthService.refreshToken(body.refreshToken)
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('ADMIN')")

@@ -1,15 +1,13 @@
 package com.blaise.paymentlater.service.v1.admin
 
-import com.blaise.paymentlater.domain.model.Admin
 import com.blaise.paymentlater.domain.model.RefreshToken
-import com.blaise.paymentlater.dto.request.AdminLoginRequestDto
-import com.blaise.paymentlater.dto.request.AdminRegisterRequestDto
 import com.blaise.paymentlater.dto.response.AdminResponseDto
 import com.blaise.paymentlater.dto.response.TokenResponseDto
 import com.blaise.paymentlater.repository.AdminRepository
 import com.blaise.paymentlater.security.admin.HashEncoderConfig
 import com.blaise.paymentlater.security.admin.JwtConfig
 import com.blaise.paymentlater.service.v1.refreshtoken.RefreshTokenService
+import com.blaise.paymentlater.util.TestFactory
 import io.mockk.*
 import io.mockk.junit5.MockKExtension
 import org.bson.types.ObjectId
@@ -25,17 +23,17 @@ import java.time.Instant
 import kotlin.test.Test
 
 @ExtendWith(MockKExtension::class)
-class AdminServiceV1ImplTest {
+class AdminAuthServiceV1ImplTest {
     private val adminRepository: AdminRepository = mockk()
     private val hashEncoderConfig: HashEncoderConfig = mockk()
     private val jwtConfig: JwtConfig = mockk()
     private val refreshTokenService: RefreshTokenService = mockk()
-    private lateinit var adminServiceV1Impl: AdminServiceV1Impl
-    private val adminData = Admin(ObjectId(), "admin1", "encode123")
+    private lateinit var adminAuthService: AdminAuthServiceV1Impl
+    private val adminData = TestFactory.admin()
 
     @BeforeEach
     fun setUp() {
-        adminServiceV1Impl = AdminServiceV1Impl(
+        adminAuthService = AdminAuthServiceV1Impl(
             adminRepository,
             hashEncoderConfig,
             jwtConfig,
@@ -54,7 +52,7 @@ class AdminServiceV1ImplTest {
 
         @Test
         fun `login should return tokens if credentials are valid`() {
-            val loginDto = AdminLoginRequestDto("admin1", "password123")
+            val loginDto = TestFactory.adminLoginRequestDto()
 
             every { adminRepository.findByUsername(loginDto.username) } returns adminData
             every { hashEncoderConfig.matches(loginDto.password, adminData.password) } returns true
@@ -62,7 +60,7 @@ class AdminServiceV1ImplTest {
             every { jwtConfig.generateRefreshToken("admin1") } returns "refreshToken"
             every { refreshTokenService.saveRefreshToken(adminData.id, "refreshToken") } just Runs
 
-            val result = adminServiceV1Impl.login(loginDto)
+            val result = adminAuthService.login(loginDto)
 
             assertEquals("accessToken", result.accessToken)
             assertEquals("refreshToken", result.refreshToken)
@@ -76,14 +74,14 @@ class AdminServiceV1ImplTest {
 
         @Test
         fun `should throw exception if credentials are invalid`() {
-            val loginDto = AdminLoginRequestDto("admin1", "password123")
-            val admin = Admin(ObjectId(), "admin1", "password123")
+            val loginDto = TestFactory.adminLoginRequestDto()
+            val admin = TestFactory.admin()
 
             every { adminRepository.findByUsername(loginDto.username) } returns admin
             every { hashEncoderConfig.matches(loginDto.password, any()) } returns false
 
             assertThrows<ResponseStatusException> {
-                adminServiceV1Impl.login(loginDto)
+                adminAuthService.login(loginDto)
             }
 
             verify(exactly = 1) { adminRepository.findByUsername(loginDto.username) }
@@ -92,12 +90,12 @@ class AdminServiceV1ImplTest {
 
         @Test
         fun `should throw exception if admin does not exist`() {
-            val loginDto = AdminLoginRequestDto("admin1", "password123")
+            val loginDto = TestFactory.adminLoginRequestDto()
 
             every { adminRepository.findByUsername(loginDto.username) } returns null
 
             assertThrows<ResponseStatusException> {
-                adminServiceV1Impl.login(loginDto)
+                adminAuthService.login(loginDto)
             }
 
             verify(exactly = 0) { hashEncoderConfig.matches(loginDto.password, any()) }
@@ -111,13 +109,13 @@ class AdminServiceV1ImplTest {
 
         @Test
         fun `should register a new admin`() {
-            val registerDto = AdminRegisterRequestDto("admin1", "password123")
+            val registerDto = TestFactory.adminRegisterRequestDto()
 
             every { adminRepository.existsByUsername(registerDto.username) } returns false
             every { hashEncoderConfig.encode(registerDto.password) } returns "encode123"
             every { adminRepository.save(any()) } returns adminData
 
-            val result = adminServiceV1Impl.register(registerDto)
+            val result = adminAuthService.register(registerDto)
             val responseDto = AdminResponseDto(
                 adminData.id.toString(),
                 "admin1",
@@ -139,12 +137,12 @@ class AdminServiceV1ImplTest {
 
         @Test
         fun `should throw exception if admin already exists`() {
-            val registerDto = AdminRegisterRequestDto("admin1", "password123")
+            val registerDto = TestFactory.adminRegisterRequestDto()
 
             every { adminRepository.existsByUsername(registerDto.username) } returns true
 
             assertThrows<ResponseStatusException> {
-                adminServiceV1Impl.register(registerDto)
+                adminAuthService.register(registerDto)
             }
 
             verify(exactly = 1) { adminRepository.existsByUsername(registerDto.username) }
@@ -161,7 +159,7 @@ class AdminServiceV1ImplTest {
             val oldRefreshToken = "oldRefreshToken"
             val newAccessToken = "newAccessToken"
             val newRefreshToken = "newRefreshToken"
-            val admin = Admin(ObjectId(), "admin1", "encode123")
+            val admin = TestFactory.admin()
 
             every { jwtConfig.refreshTokenValidityMillis } returns 1000
             val refreshTokenData = RefreshToken(
@@ -181,7 +179,7 @@ class AdminServiceV1ImplTest {
             every { jwtConfig.generateRefreshToken("admin1") } returns newRefreshToken
             every { refreshTokenService.saveRefreshToken(any(), any()) } just Runs
 
-            val result = adminServiceV1Impl.refreshToken(oldRefreshToken)
+            val result = adminAuthService.refreshToken(oldRefreshToken)
 
             assertEquals(TokenResponseDto(newAccessToken, newRefreshToken), result)
             verify(exactly = 1) { jwtConfig.validateRefreshToken(oldRefreshToken) }
@@ -201,7 +199,7 @@ class AdminServiceV1ImplTest {
             every { jwtConfig.validateRefreshToken(oldRefreshToken) } returns false
 
             assertThrows<ResponseStatusException> {
-                adminServiceV1Impl.refreshToken(oldRefreshToken)
+                adminAuthService.refreshToken(oldRefreshToken)
             }
 
             verify(exactly = 1) { jwtConfig.validateRefreshToken(oldRefreshToken) }
@@ -216,17 +214,17 @@ class AdminServiceV1ImplTest {
 
             every { jwtConfig.validateRefreshToken(oldRefreshToken) } returns true
             every { jwtConfig.getUsernameFromToken(oldRefreshToken) } returns username
-            every { adminServiceV1Impl.findByUsername(username) } returns adminData
+            every { adminAuthService.findByUsername(username) } returns adminData
             every { refreshTokenService.findByUserIdAndToken(any(), any()) } returns null
             every { hashEncoderConfig.hashLongString(oldRefreshToken) } returns hashedOldRefreshToken
 
             assertThrows<ResponseStatusException> {
-                adminServiceV1Impl.refreshToken(oldRefreshToken)
+                adminAuthService.refreshToken(oldRefreshToken)
             }
 
             verify(exactly = 1) { jwtConfig.validateRefreshToken(oldRefreshToken) }
             verify(exactly = 1) { jwtConfig.getUsernameFromToken(oldRefreshToken) }
-            verify(exactly = 1) { adminServiceV1Impl.findByUsername(username) }
+            verify(exactly = 1) { adminAuthService.findByUsername(username) }
             verify(exactly = 1) { refreshTokenService.findByUserIdAndToken(any(), any()) }
             verify(exactly = 0) { refreshTokenService.deleteByUserIdAndToken(any(), any()) }
         }
