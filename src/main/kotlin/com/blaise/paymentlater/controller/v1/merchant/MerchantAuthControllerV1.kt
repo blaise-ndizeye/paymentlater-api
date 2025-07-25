@@ -28,6 +28,11 @@ class MerchantAuthControllerV1(
     fun regenerateApiKey(@Valid @RequestBody body: RegenerateApiKeyRequestDto): ResponseEntity<Unit> =
         merchantAuthService.regenerateApiKey(body.email)
 
+    @PostMapping("/set-webhook")
+    @PreAuthorize("hasRole('MERCHANT')")
+    fun setWebhook(): ResponseEntity<Unit> = TODO()
+
+
     @GetMapping("/me")
     @PreAuthorize("hasRole('MERCHANT')")
     fun me(@AuthenticationPrincipal merchant: Merchant): MerchantProfileResponseDto =

@@ -1,14 +1,19 @@
 package com.blaise.paymentlater.notification
 
 import com.blaise.paymentlater.domain.exception.EmailSendingException
+import com.mongodb.MongoSocketReadTimeoutException
+import com.mongodb.MongoTimeoutException
 import jakarta.mail.MessagingException
 import mu.KotlinLogging
 import org.springframework.mail.MailException
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
+import java.net.SocketTimeoutException
 
 private val log = KotlinLogging.logger {}
 
@@ -17,6 +22,17 @@ class MailService(
     val javaMailSender: JavaMailSender,
     val templateEngine: TemplateEngine
 ) {
+
+    @Retryable(
+        value = [
+            EmailSendingException::class,
+            MongoTimeoutException::class,
+            MongoSocketReadTimeoutException::class,
+            SocketTimeoutException::class
+        ],
+        maxAttempts = 3,
+        backoff = Backoff(delay = 2000, multiplier = 2.0, maxDelay = 10000)
+    )
     fun sendApiKeyEmail(to: String, name: String, apiKey: String) {
         val context = Context().apply {
             setVariable("name", name)
