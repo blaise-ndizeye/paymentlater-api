@@ -2,9 +2,9 @@ package com.blaise.paymentlater.domain.extension
 
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.response.MerchantProfileResponseDto
-import com.blaise.paymentlater.dto.response.MerchantResponseDto
+import com.blaise.paymentlater.dto.response.MerchantRegisterResponseDto
 
-fun Merchant.toMerchantResponseDto(): MerchantResponseDto = MerchantResponseDto(
+fun Merchant.toMerchantRegisterResponseDto(): MerchantRegisterResponseDto = MerchantRegisterResponseDto(
     id = id.toHexString(),
     name = name,
     email = email,

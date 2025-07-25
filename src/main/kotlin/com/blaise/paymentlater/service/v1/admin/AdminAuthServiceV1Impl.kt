@@ -7,7 +7,7 @@ import com.blaise.paymentlater.dto.request.AdminRegisterRequestDto
 import com.blaise.paymentlater.dto.response.AdminResponseDto
 import com.blaise.paymentlater.dto.response.TokenResponseDto
 import com.blaise.paymentlater.repository.AdminRepository
-import com.blaise.paymentlater.security.admin.HashEncoderConfig
+import com.blaise.paymentlater.config.HashEncoderConfig
 import com.blaise.paymentlater.security.admin.JwtConfig
 import com.blaise.paymentlater.service.v1.refreshtoken.RefreshTokenService
 import mu.KotlinLogging
@@ -68,7 +68,7 @@ class AdminAuthServiceV1Impl(
 
         refreshTokenService.findByUserIdAndToken(
             user.id,
-            hashEncoderConfig.hashLongString(oldRefreshToken)
+            hashEncoderConfig.digest(oldRefreshToken)
         ) ?: throw exception
         refreshTokenService.deleteByUserIdAndToken(user.id, oldRefreshToken)
 

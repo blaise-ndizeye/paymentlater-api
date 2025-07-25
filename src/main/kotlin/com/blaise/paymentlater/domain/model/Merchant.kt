@@ -20,6 +20,9 @@ data class Merchant(
     @Indexed(unique = true)
     val apiKey: String,
 
+    @Indexed(unique = true)
+    val apiKeyDigest: String,
+
     val webhookUrl: String? = null,
 
     val isActive: Boolean = true,

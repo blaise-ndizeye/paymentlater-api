@@ -1,4 +1,4 @@
-package com.blaise.paymentlater.security.admin
+package com.blaise.paymentlater.config
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
@@ -14,7 +14,7 @@ class HashEncoderConfig {
     fun matches(password: String, hash: String): Boolean =
         bcrypt.matches(password, hash)
 
-    fun hashLongString(token: String): String {
+    fun digest(token: String): String {
         val hashBytes = MessageDigest.getInstance("SHA-256")
             .digest(token.toByteArray())
         return Base64.getEncoder().encodeToString(hashBytes)

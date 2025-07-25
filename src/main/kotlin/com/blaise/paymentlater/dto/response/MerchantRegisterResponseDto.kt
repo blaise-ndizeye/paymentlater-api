@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.dto.response
 
-data class MerchantResponseDto(
+data class MerchantRegisterResponseDto(
     val id: String,
     val name: String,
     val email: String,

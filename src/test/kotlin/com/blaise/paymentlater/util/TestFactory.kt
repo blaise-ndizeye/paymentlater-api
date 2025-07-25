@@ -1,5 +1,7 @@
 package com.blaise.paymentlater.util
 
+import com.blaise.paymentlater.domain.extension.toMerchantProfileResponseDto
+import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.Admin
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.AdminLoginRequestDto
@@ -13,16 +15,17 @@ object TestFactory {
         id: ObjectId = ObjectId(),
         username: String = "admin1",
         password: String = "encodedPassword"
-    ) = Admin(id = id, username = username, password = password)
+    ) = Admin(id, username, password)
 
     fun merchant(
-        id: ObjectId = ObjectId(),
+        id: ObjectId = ObjectId("688343c2b89f9cf214b8aae5"),
         name: String = "merchant",
         email: String = "john@doe",
         webhookUrl: String = "https://example.com/webhook",
         isActive: Boolean = true,
-        apiKey: String = "fake-api-key"
-    ) = Merchant(id = id, name, email, apiKey, webhookUrl, isActive)
+        apiKey: String = "fake-api-key",
+        apiKeyDigest: String = "fake-api-key-digest"
+    ) = Merchant(id, name, email, apiKey, apiKeyDigest, webhookUrl, isActive)
 
     fun adminLoginRequestDto(username: String = "admin1", password: String = "password") =
         AdminLoginRequestDto(username, password)
@@ -30,7 +33,7 @@ object TestFactory {
     fun adminRegisterRequestDto(username: String = "admin1", password: String = "password") =
         AdminRegisterRequestDto(username, password)
 
-    fun merchantRegisterDto(
+    fun merchantRegisterRequestDto(
         name: String = "merchant",
         email: String = "john@doe",
         webhookUrl: String = "https://example.com/webhook"
@@ -39,4 +42,7 @@ object TestFactory {
         email,
         webhookUrl
     )
+
+    fun merchantProfileResponseDto() = merchant().toMerchantProfileResponseDto()
+    fun merchantResponseDto() = merchant().toMerchantRegisterResponseDto()
 }

@@ -33,12 +33,32 @@ class MailService(
         maxAttempts = 3,
         backoff = Backoff(delay = 2000, multiplier = 2.0, maxDelay = 10000)
     )
-    fun sendApiKeyEmail(to: String, name: String, apiKey: String) {
+    fun sendRegenerateApiKeyEmail(to: String, name: String, apiKey: String) {
+        val htmlTemplate = "mail/merchant/regenerate-api-key.html"
+        return sendApiKeyEmail(to, name, apiKey, htmlTemplate)
+    }
+
+    @Retryable(
+        value = [
+            EmailSendingException::class,
+            MongoTimeoutException::class,
+            MongoSocketReadTimeoutException::class,
+            SocketTimeoutException::class
+        ],
+        maxAttempts = 3,
+        backoff = Backoff(delay = 2000, multiplier = 2.0, maxDelay = 10000)
+    )
+    fun sendMerchantRegisterApiKeyEmail(to: String, name: String, apiKey: String) {
+        val htmlTemplate = "mail/merchant/merchant-register-api-key.html"
+        return sendApiKeyEmail(to, name, apiKey, htmlTemplate)
+    }
+
+    private fun sendApiKeyEmail(to: String, name: String, apiKey: String, htmlTemplate: String) {
         val context = Context().apply {
             setVariable("name", name)
             setVariable("apiKey", apiKey)
         }
-        val content = templateEngine.process("mail/merchant/regenerate-api-key.html", context)
+        val content = templateEngine.process(htmlTemplate, context)
         val message = javaMailSender.createMimeMessage()
 
         try {

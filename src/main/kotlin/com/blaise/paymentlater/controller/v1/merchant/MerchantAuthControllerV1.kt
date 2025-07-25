@@ -1,11 +1,13 @@
 package com.blaise.paymentlater.controller.v1.merchant
 
 import com.blaise.paymentlater.domain.extension.toMerchantProfileResponseDto
+import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.MerchantRegisterRequestDto
 import com.blaise.paymentlater.dto.request.RegenerateApiKeyRequestDto
+import com.blaise.paymentlater.dto.request.SetWebhookRequestDto
 import com.blaise.paymentlater.dto.response.MerchantProfileResponseDto
-import com.blaise.paymentlater.dto.response.MerchantResponseDto
+import com.blaise.paymentlater.dto.response.MerchantRegisterResponseDto
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -22,7 +24,7 @@ class MerchantAuthControllerV1(
     @PostMapping("/register")
     fun register(
         @Valid @RequestBody merchant: MerchantRegisterRequestDto
-    ): MerchantResponseDto = merchantAuthService.register(merchant)
+    ): MerchantRegisterResponseDto = merchantAuthService.register(merchant)
 
     @PostMapping("/regenerate-api-key")
     fun regenerateApiKey(@Valid @RequestBody body: RegenerateApiKeyRequestDto): ResponseEntity<Unit> =
@@ -30,8 +32,8 @@ class MerchantAuthControllerV1(
 
     @PostMapping("/set-webhook")
     @PreAuthorize("hasRole('MERCHANT')")
-    fun setWebhook(): ResponseEntity<Unit> = TODO()
-
+    fun setWebhook(@Valid @RequestBody body: SetWebhookRequestDto): ResponseEntity<Unit> =
+        merchantAuthService.setWebhook(body.webhookUrl)
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('MERCHANT')")

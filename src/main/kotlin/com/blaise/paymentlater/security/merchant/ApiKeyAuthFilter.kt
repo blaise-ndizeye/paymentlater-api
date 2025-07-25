@@ -24,7 +24,7 @@ class ApiKeyAuthFilter(
         val apiKey = apiKeyConfig.extractFrom(request)
 
         if (!apiKey.isNullOrBlank()) {
-            val merchant = merchantAuthService.findByApiKey(apiKey)
+            val merchant = merchantAuthService.findByApiKeyDigest(apiKey)
 
             if (merchant != null && merchant.isActive) {
                 val authorities = merchant.roles.map { SimpleGrantedAuthority("ROLE_$it") }

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Your New API Key – PaymentLater</title>
+    <title>Your API Key - PaymentLater</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -28,7 +28,7 @@
             border-radius: 4px;
             font-weight: bold;
             font-size: 1.1em;
-            word-break: break-word;
+            word-break: break-all;
             text-align: center;
         }
         .footer {
@@ -46,25 +46,23 @@
 <body>
 <div class="container">
     <div class="header">
-        <h2>API Key Regenerated – <span class="brand">PaymentLater</span></h2>
+        <h2>Welcome to <span class="brand">PaymentLater</span>, <span th:text="${name}">Merchant</span>!</h2>
     </div>
 
     <p>
-        Hello <span th:text="${name}">Merchant</span>,
+        We're excited to have you on board. Here is your unique API key:
     </p>
 
-    <p>
-        Your new API key has been successfully regenerated. Please find your new key below:
-    </p>
-
-    <div class="api-key" th:text="${apiKey}">your-new-api-key</div>
+    <div class="api-key" th:text="${apiKey}">your-api-key</div>
 
     <p style="margin-top: 20px;">
-        Keep it safe and do not share it publicly. If you didn't request a new API key, please contact our support team immediately.
+        Please keep this key safe and never share it publicly.
+        You'll use it to authenticate your requests to our system.
     </p>
 
     <div class="footer">
-        &copy; 2025 PaymentLater Inc. — All rights reserved.
+        If you did not register for this service, please contact us immediately.<br/>
+        &copy; 2025 PaymentLater Inc.
     </div>
 </div>
 </body>

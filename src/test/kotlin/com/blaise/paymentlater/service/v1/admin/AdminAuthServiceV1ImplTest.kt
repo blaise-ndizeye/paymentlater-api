@@ -4,7 +4,7 @@ import com.blaise.paymentlater.domain.model.RefreshToken
 import com.blaise.paymentlater.dto.response.AdminResponseDto
 import com.blaise.paymentlater.dto.response.TokenResponseDto
 import com.blaise.paymentlater.repository.AdminRepository
-import com.blaise.paymentlater.security.admin.HashEncoderConfig
+import com.blaise.paymentlater.config.HashEncoderConfig
 import com.blaise.paymentlater.security.admin.JwtConfig
 import com.blaise.paymentlater.service.v1.refreshtoken.RefreshTokenService
 import com.blaise.paymentlater.util.TestFactory
@@ -39,11 +39,12 @@ class AdminAuthServiceV1ImplTest {
             jwtConfig,
             refreshTokenService
         )
-    }
-
-    @BeforeEach
-    fun resetMocks() {
-        clearMocks(adminRepository, hashEncoderConfig, jwtConfig, refreshTokenService)
+        clearMocks(
+            adminRepository,
+            hashEncoderConfig,
+            jwtConfig,
+            refreshTokenService
+        )
     }
 
     @Nested
@@ -172,7 +173,7 @@ class AdminAuthServiceV1ImplTest {
             every { jwtConfig.validateRefreshToken(oldRefreshToken) } returns true
             every { jwtConfig.getUsernameFromToken(oldRefreshToken) } returns "admin1"
             every { adminRepository.findByUsername("admin1") } returns admin
-            every { hashEncoderConfig.hashLongString(oldRefreshToken) } returns newRefreshToken
+            every { hashEncoderConfig.digest(oldRefreshToken) } returns newRefreshToken
             every { refreshTokenService.findByUserIdAndToken(any(), any()) } returns refreshTokenData
             every { refreshTokenService.deleteByUserIdAndToken(any(), any()) } just Runs
             every { jwtConfig.generateAccessToken("admin1") } returns newAccessToken
@@ -216,7 +217,7 @@ class AdminAuthServiceV1ImplTest {
             every { jwtConfig.getUsernameFromToken(oldRefreshToken) } returns username
             every { adminAuthService.findByUsername(username) } returns adminData
             every { refreshTokenService.findByUserIdAndToken(any(), any()) } returns null
-            every { hashEncoderConfig.hashLongString(oldRefreshToken) } returns hashedOldRefreshToken
+            every { hashEncoderConfig.digest(oldRefreshToken) } returns hashedOldRefreshToken
 
             assertThrows<ResponseStatusException> {
                 adminAuthService.refreshToken(oldRefreshToken)

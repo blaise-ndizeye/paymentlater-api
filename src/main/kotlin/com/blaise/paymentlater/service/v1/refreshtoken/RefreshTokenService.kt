@@ -2,7 +2,7 @@ package com.blaise.paymentlater.service.v1.refreshtoken
 
 import com.blaise.paymentlater.domain.model.RefreshToken
 import com.blaise.paymentlater.repository.RefreshTokenRepository
-import com.blaise.paymentlater.security.admin.HashEncoderConfig
+import com.blaise.paymentlater.config.HashEncoderConfig
 import com.blaise.paymentlater.security.admin.JwtConfig
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
@@ -19,7 +19,7 @@ class RefreshTokenService(
         refreshTokenRepository.save(
             RefreshToken(
                 userId = userId,
-                token = hashEncoderConfig.hashLongString(refreshToken),
+                token = hashEncoderConfig.digest(refreshToken),
                 expiresAt = Instant.now().plusMillis(
                     jwtConfig.refreshTokenValidityMillis
                 )
