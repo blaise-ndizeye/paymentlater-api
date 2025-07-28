@@ -9,15 +9,20 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.server.ResponseStatusException
 import java.net.SocketTimeoutException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationException(e: MethodArgumentNotValidException): ResponseEntity<Map<String, Any>> {
+    fun handleValidationException(e: MethodArgumentNotValidException): ResponseEntity<ApiErrorResponseDto> {
         val errors = e.bindingResult.allErrors.map { it.defaultMessage }
-        return ResponseEntity.badRequest().body(mapOf("errors" to errors))
+        return ResponseEntity.badRequest().body(
+            ApiErrorResponseDto(
+                errors.joinToString(", ")
+            )
+        )
     }
 
     @ExceptionHandler(EmailSendingException::class)
@@ -26,8 +31,18 @@ class GlobalExceptionHandler {
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(
                 ApiErrorResponseDto(
-                    "EMAIL_SEND_FAILED",
                     e.message ?: "Email sending failed"
+                )
+            )
+    }
+
+    @ExceptionHandler(ResponseStatusException::class)
+    fun handleResponseStatus(e: ResponseStatusException): ResponseEntity<ApiErrorResponseDto> {
+        return ResponseEntity
+            .status(e.statusCode)
+            .body(
+                ApiErrorResponseDto(
+                    e.message
                 )
             )
     }
@@ -43,7 +58,6 @@ class GlobalExceptionHandler {
     fun handleMongoTimeouts(e: Exception): ResponseEntity<ApiErrorResponseDto> {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
             ApiErrorResponseDto(
-                code = HttpStatus.SERVICE_UNAVAILABLE.toString(),
                 message = "Service unavailable. Please try again later."
             )
         )

@@ -45,7 +45,8 @@ class MerchantAuthServiceV1Impl(
                 name = body.name,
                 email = body.email,
                 apiKey = hashedApiKey,
-                apiKeyDigest = apiKeyDigest
+                apiKeyDigest = apiKeyDigest,
+                webhookUrl = body.webhookUrl
             )
         )
 
