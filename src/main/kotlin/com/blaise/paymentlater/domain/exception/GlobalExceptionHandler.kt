@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.server.ResponseStatusException
 import java.net.SocketTimeoutException
+import java.time.format.DateTimeParseException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -59,6 +60,20 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
             ApiErrorResponseDto(
                 message = "Service unavailable. Please try again later."
+            )
+        )
+    }
+
+    @ExceptionHandler(
+        value = [
+            IllegalArgumentException::class,
+            DateTimeParseException::class
+        ]
+    )
+    fun handleConversionErrors(e: Exception): ResponseEntity<ApiErrorResponseDto> {
+        return ResponseEntity.badRequest().body(
+            ApiErrorResponseDto(
+                message = e.message ?: "Invalid request."
             )
         )
     }

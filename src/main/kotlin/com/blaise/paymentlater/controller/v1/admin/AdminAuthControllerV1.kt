@@ -113,7 +113,7 @@ class AdminAuthControllerV1(
     @Operation(
         summary = "Get admin profile",
         description = "Get admin profile",
-        security = [SecurityRequirement(name = "ApiKey")],
+        security = [SecurityRequirement(name = "BearerToken")],
         responses = [
             ApiResponse(
                 responseCode = "200", content = [
@@ -127,7 +127,7 @@ class AdminAuthControllerV1(
                 responseCode = "401", description = "Unauthorized", content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Unit::class)
+                        schema = Schema(type = "object", nullable = true)
                     ),
                 ]
             ),
