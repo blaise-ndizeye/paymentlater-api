@@ -112,7 +112,7 @@ class MerchantAuthControllerV1(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Unit::class)
+                        schema = Schema(type = "object", nullable = true)
                     ),
                 ]
             ),
@@ -141,7 +141,7 @@ class MerchantAuthControllerV1(
                 responseCode = "401", description = "Unauthorized", content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = Unit::class)
+                        schema = Schema(type = "object", nullable = true)
                     ),
                 ]
             ),
