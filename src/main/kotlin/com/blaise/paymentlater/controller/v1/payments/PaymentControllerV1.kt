@@ -4,6 +4,7 @@ import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto
+import com.blaise.paymentlater.dto.response.ApiErrorResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.PaymentIntentResponseDto
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
@@ -36,6 +38,42 @@ private data class PaymentIntentPageResponseDto(
 class PaymentControllerV1(
     private val paymentService: PaymentServiceV1
 ) {
+
+    @PostMapping
+    @PreAuthorize("hasRole('MERCHANT')")
+    @SecurityRequirement(name = "ApiKey")
+    @Operation(
+        summary = "Create payment intent for a merchant",
+        security = [SecurityRequirement(name = "ApiKey")],
+        description = "Create payment intent for a merchant",
+        responses = [
+            ApiResponse(
+                responseCode = "201",
+                description = "Payment intent created successfully",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = PaymentIntentResponseDto::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+        ]
+    )
+    fun createPaymentIntent(
+        @Parameter(description = "Payment intent request details")
+        @Valid @RequestBody body: PaymentIntentRequestDto
+    ): PaymentIntentResponseDto = paymentService.createPaymentIntent(body)
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
     @SecurityRequirement(name = "BearerToken")
@@ -96,18 +134,17 @@ class PaymentControllerV1(
         return paymentService.getPayments(filter, page, size)
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('MERCHANT')")
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
+    @SecurityRequirement(name = "BearerToken")
     @SecurityRequirement(name = "ApiKey")
     @Operation(
-        summary = "Create payment intent for a merchant",
-        security = [SecurityRequirement(name = "ApiKey")],
-        description = "Create payment intent for a merchant",
+        summary = "Get a payment intent by id",
+        security = [SecurityRequirement(name = "BearerToken"), SecurityRequirement(name = "ApiKey")],
+        description = "Get a payment intent by id",
         responses = [
             ApiResponse(
-                responseCode = "201",
-                description = "Payment intent created successfully",
-                content = [
+                responseCode = "200", content = [
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = PaymentIntentResponseDto::class)
@@ -115,19 +152,26 @@ class PaymentControllerV1(
                 ]
             ),
             ApiResponse(
-                responseCode = "401",
-                description = "Unauthorized",
-                content = [
+                responseCode = "401", description = "Unauthorized", content = [
                     Content(
                         mediaType = "application/json",
                         schema = Schema(type = "object", nullable = true)
                     ),
                 ]
             ),
+            ApiResponse(
+                responseCode = "404", description = "Payment intent not found", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = ApiErrorResponseDto::class)
+                    ),
+                ]
+            ),
         ]
     )
-    fun createPaymentIntent(
-        @Parameter(description = "Payment intent request details")
-        @Valid @RequestBody body: PaymentIntentRequestDto
-    ): PaymentIntentResponseDto = paymentService.createPaymentIntent(body)
+    fun getPayment(
+        @AuthenticationPrincipal user: Any,
+        @Parameter(description = "Payment intent id")
+        @PathVariable id: String
+    ): PaymentIntentResponseDto = paymentService.getPayment(id, user)
 }

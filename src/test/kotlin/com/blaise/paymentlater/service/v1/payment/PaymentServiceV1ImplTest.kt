@@ -1,15 +1,14 @@
 package com.blaise.paymentlater.service.v1.payment
 
 import com.blaise.paymentlater.domain.enums.Currency
+import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
+import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.PaymentIntentRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1Impl
 import com.blaise.paymentlater.util.TestFactory
-import io.mockk.clearMocks
-import io.mockk.every
+import io.mockk.*
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
-import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -34,6 +33,39 @@ class PaymentServiceV1ImplTest {
     }
 
     @Nested
+    @DisplayName("GET PAYMENT INTENT BY ID")
+    inner class GetPaymentByID {
+
+        @Test
+        fun `should get payment intent by id`() {
+            val id = "123"
+            val paymentIntent: PaymentIntent = TestFactory.paymentIntent1()
+            val paymentServiceSpy = spyk(paymentService)
+
+            every { paymentServiceSpy.findById(id) } returns paymentIntent
+
+            val result = paymentServiceSpy.getPayment(id, TestFactory.merchant())
+
+            assertEquals(paymentIntent.toPaymentIntentResponseDto(), result)
+            verify(exactly = 1) { paymentServiceSpy.findById(id) }
+        }
+
+        @Test
+        fun `should throw exception if payment intent not found`() {
+            val id = "123"
+            val paymentServiceSpy = spyk(paymentService)
+
+            every { paymentServiceSpy.findById(id) } throws ResponseStatusException(HttpStatus.NOT_FOUND)
+
+            assertThrows<ResponseStatusException> {
+                paymentServiceSpy.getPayment(id, TestFactory.merchant())
+            }
+
+            verify(exactly = 1) { paymentServiceSpy.findById(id) }
+        }
+    }
+
+    @Nested
     @DisplayName("GET PAYMENTS")
     inner class GetPayments {
 
@@ -52,9 +84,9 @@ class PaymentServiceV1ImplTest {
             )
 
             val result = paymentService.getPayments(
-               filter = PaymentIntentFilterDto(),
-               page = page,
-               size = size
+                filter = PaymentIntentFilterDto(),
+                page = page,
+                size = size
             )
 
             assertEquals(0, result.page)

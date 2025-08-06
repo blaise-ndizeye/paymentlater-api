@@ -135,8 +135,8 @@ class MerchantAuthServiceV1ImplTest {
         fun `should set webhook`() {
             val webhookUrl = "https://example.com/webhook"
             val merchant = TestFactory.merchant()
-
             val merchantAuthServiceSpy = spyk(merchantAuthService)
+
             every { merchantAuthServiceSpy.getAuthenticatedMerchant() } returns merchant
             every { merchantRepository.save(any()) } returns merchant
 

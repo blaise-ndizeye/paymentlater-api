@@ -3,6 +3,8 @@ package com.blaise.paymentlater.service.v1.payment
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
+import com.blaise.paymentlater.domain.model.Admin
+import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
@@ -11,7 +13,10 @@ import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.PaymentIntentRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
 import mu.KotlinLogging
+import org.bson.types.ObjectId
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 
 private val log = KotlinLogging.logger {}
 
@@ -27,11 +32,29 @@ class PaymentServiceV1Impl(
         size: Int
     ): PageResponseDto<PaymentIntentResponseDto> {
         val paymentIntents = paymentIntentRepository.search(filter, page, size)
+
         return paymentIntents.map { it.toPaymentIntentResponseDto() }
             .toPageResponseDto()
             .also {
                 log.info { "Found ${paymentIntents.totalElements} payment intents" }
             }
+    }
+
+    override fun getPayment(id: String, user: Any): PaymentIntentResponseDto {
+        val paymentIntent = findById(id)
+        paymentIntent.let {
+            log.info { "Found payment intent: ${paymentIntent.id}" }
+        }
+
+        return when (user) {
+            is Merchant -> {
+                if (user.id != paymentIntent.merchantId)
+                    throw ResponseStatusException(HttpStatus.FORBIDDEN)
+                paymentIntent.toPaymentIntentResponseDto()
+            }
+            is Admin -> paymentIntent.toPaymentIntentResponseDto()
+            else -> throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
     }
 
     override fun createPaymentIntent(body: PaymentIntentRequestDto): PaymentIntentResponseDto {
@@ -49,5 +72,11 @@ class PaymentServiceV1Impl(
         )
             .toPaymentIntentResponseDto()
             .also { log.info { "Created payment intent: ${it.id}" } }
+    }
+
+    override fun findById(id: String): PaymentIntent {
+        return paymentIntentRepository.findById(ObjectId(id)).orElseThrow {
+            ResponseStatusException(HttpStatus.NOT_FOUND, "Payment intent with id $id not found")
+        }
     }
 }
