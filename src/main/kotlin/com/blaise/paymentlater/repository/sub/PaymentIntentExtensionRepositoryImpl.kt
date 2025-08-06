@@ -1,50 +1,50 @@
 package com.blaise.paymentlater.repository.sub
 
-import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.model.PaymentIntent
+import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
+import com.blaise.paymentlater.repository.util.buildMongoCriteria
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
-import java.time.Instant
 
 class PaymentIntentExtensionRepositoryImpl(
     private val mongoTemplate: MongoTemplate
 ) : PaymentIntentExtensionRepository {
 
-    override fun findByAdminFilters(
-        statuses: List<PaymentStatus>?,
-        currencies: List<String>?,
-        start: Instant?,
-        end: Instant?,
-        pageable: Pageable
+    override fun search(
+        filter: PaymentIntentFilterDto,
+        page: Int,
+        size: Int
     ): Page<PaymentIntent> {
-        val criteria = mutableListOf<Criteria>()
+        val (merchantId, start, end, statuses, currencies) = filter
 
-        statuses?.takeIf { it.isNotEmpty() }?.let {
-            criteria.add(Criteria.where("status").`in`(*it.toTypedArray()))
+        val criteria = buildMongoCriteria {
+            eq("merchantId", merchantId)
+            `in`("status", statuses?.map { it.name })
+            `in`("currency", currencies?.map { it.name })
+            gte("createdAt", start)
+            lte("createdAt", end)
         }
 
-        currencies?.takeIf { it.isNotEmpty() }?.let {
-            criteria.add(Criteria.where("currency").`in`(*it.toTypedArray()))
+        val pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+        )
+
+        val query = Query().apply {
+            criteria.forEach { addCriteria(it) }
+            with(pageable)
         }
-
-        if (start != null && end != null)
-            criteria.add(Criteria.where("createdAt").gte(start).lte(end))
-
-        val query = if (criteria.isEmpty())
-            Query()
-        else {
-            Query()
-                .addCriteria(Criteria().andOperator(*criteria.toTypedArray()))
-        }.with(pageable)
 
         val total = mongoTemplate.count(
             query.skip(-1).limit(-1),
             PaymentIntent::class.java
         )
+
         val list = mongoTemplate.find(query, PaymentIntent::class.java)
 
         return PageImpl(list, pageable, total)

@@ -1,17 +1,13 @@
 package com.blaise.paymentlater.repository.sub
 
-import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.model.PaymentIntent
+import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
-import java.time.Instant
 
 interface PaymentIntentExtensionRepository {
-    fun findByAdminFilters(
-        statuses: List<PaymentStatus>?,
-        currencies: List<String>?,
-        start: Instant?,
-        end: Instant?,
-        pageable: Pageable
+    fun search(
+        filter: PaymentIntentFilterDto,
+        page: Int,
+        size: Int
     ): Page<PaymentIntent>
 }

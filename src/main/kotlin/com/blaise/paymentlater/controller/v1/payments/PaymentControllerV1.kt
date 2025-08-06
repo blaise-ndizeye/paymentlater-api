@@ -2,9 +2,11 @@ package com.blaise.paymentlater.controller.v1.payments
 
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.PaymentIntentResponseDto
+import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.service.v1.payment.PaymentServiceV1
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -15,12 +17,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
 @Schema(description = "Paginated response of PaymentIntent")
@@ -33,18 +31,20 @@ private data class PaymentIntentPageResponseDto(
 )
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/payments")
 @Tag(name = "Payments", description = "Payments endpoints")
 class PaymentControllerV1(
     private val paymentService: PaymentServiceV1
 ) {
-    @GetMapping("/admin/payments")
-    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
     @SecurityRequirement(name = "BearerToken")
+    @SecurityRequirement(name = "ApiKey")
     @Operation(
         summary = "Get all payment intents (with filters)",
-        security = [SecurityRequirement(name = "BearerToken")],
-        description = "Allows admin to fetch all payment intents with optional filters like status, currency, and date range.",
+        security = [SecurityRequirement(name = "BearerToken"), SecurityRequirement(name = "ApiKey")],
+        description = "Allows users to fetch all payment intents with optional filters like status, currency, and date range." +
+                " For an admin user, all payment intents will be returned.",
         responses = [
             ApiResponse(
                 responseCode = "200", content = [
@@ -65,6 +65,7 @@ class PaymentControllerV1(
         ]
     )
     fun getPayments(
+        authentication: Authentication,
         @Parameter(description = "List of payment statuses", example = "PENDING, COMPLETED, FAILED, CANCELLED")
         @RequestParam(required = false) statuses: List<String>?,
 
@@ -82,17 +83,20 @@ class PaymentControllerV1(
 
         @Parameter(description = "Page size", example = "20")
         @RequestParam(defaultValue = "20") size: Int
-    ): PageResponseDto<PaymentIntentResponseDto> =
-        paymentService.getPayments(
+    ): PageResponseDto<PaymentIntentResponseDto> {
+        val user = authentication.principal
+        val filter = PaymentIntentFilterDto(
             statuses = statuses?.map { PaymentStatus.valueOf(it) },
             currencies = currencies?.map { Currency.valueOf(it) },
             start = start?.let { Instant.parse(it) },
             end = end?.let { Instant.parse(it) },
-            page,
-            size
+            merchantId = if (user is Merchant) user.id else null
         )
 
-    @PostMapping("/merchant/payments")
+        return paymentService.getPayments(filter, page, size)
+    }
+
+    @PostMapping
     @PreAuthorize("hasRole('MERCHANT')")
     @SecurityRequirement(name = "ApiKey")
     @Operation(

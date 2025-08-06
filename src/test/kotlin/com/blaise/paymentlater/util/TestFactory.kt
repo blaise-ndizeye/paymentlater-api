@@ -7,11 +7,11 @@ import com.blaise.paymentlater.domain.model.Admin
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.dto.request.*
+import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import org.bson.types.ObjectId
 import java.math.BigDecimal
 
 object TestFactory {
-
     fun admin(
         id: ObjectId = ObjectId(),
         username: String = "admin1",
