@@ -1,8 +1,9 @@
-package com.blaise.paymentlater.service.v1.admin
+package com.blaise.paymentlater.service.v1.payment
 
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.repository.PaymentIntentRepository
+import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1Impl
 import com.blaise.paymentlater.util.TestFactory
 import io.mockk.clearMocks
 import io.mockk.every
@@ -12,28 +13,32 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @ExtendWith(MockKExtension::class)
-class AdminPaymentServiceV1ImplTest {
+class PaymentServiceV1ImplTest {
     private val paymentIntentRepository: PaymentIntentRepository = mockk()
-    private lateinit var paymentService: AdminPaymentServiceV1Impl
+    private val merchantAuthService: MerchantAuthServiceV1Impl = mockk()
+    private lateinit var paymentService: PaymentServiceV1Impl
 
     @BeforeEach
     fun setup() {
-        paymentService = AdminPaymentServiceV1Impl(paymentIntentRepository)
+        paymentService = PaymentServiceV1Impl(paymentIntentRepository, merchantAuthService)
         clearMocks(paymentIntentRepository)
     }
 
     @Nested
-    @DisplayName("SEARCH")
-    inner class Search {
+    @DisplayName("GET PAYMENTS")
+    inner class GetPayments {
 
         @Test
         fun `should search payment intents`() {
@@ -65,7 +70,7 @@ class AdminPaymentServiceV1ImplTest {
                 )
             )
 
-            val result = paymentService.search(statuses, currencies, start, end, page, size)
+            val result = paymentService.getPayments(statuses, currencies, start, end, page, size)
 
             assertEquals(0, result.page)
             assertEquals(2, result.size)
@@ -113,7 +118,7 @@ class AdminPaymentServiceV1ImplTest {
                 )
             } returns PageImpl(emptyList())
 
-            val result = paymentService.search(statuses, currencies, start, end, page, size)
+            val result = paymentService.getPayments(statuses, currencies, start, end, page, size)
 
             assertEquals(0, result.page)
             assertEquals(0, result.size)
@@ -129,6 +134,45 @@ class AdminPaymentServiceV1ImplTest {
                     pageable
                 )
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("CREATE PAYMENT INTENT")
+    inner class CreatePaymentIntent {
+
+        @Test
+        fun `should create payment intent`() {
+            val body = TestFactory.paymentIntentRequestDto()
+            val merchant = TestFactory.merchant()
+            val totalAmount = body.items.sumOf { it.unitAmount * it.quantity.toBigDecimal() }
+
+            every { merchantAuthService.getAuthenticatedMerchant() } returns merchant
+            every { paymentIntentRepository.save(any()) } returns TestFactory.paymentIntent1()
+
+            val result = paymentService.createPaymentIntent(body)
+
+            assertEquals(merchant.id.toString(), result.merchantId)
+            assertEquals(body.items, result.items)
+            assertEquals(totalAmount, result.amount)
+            assertEquals(Currency.valueOf(body.currency), result.currency)
+            assertEquals(body.metadata, result.metadata)
+
+            verify(exactly = 1) { merchantAuthService.getAuthenticatedMerchant() }
+            verify(exactly = 1) { paymentIntentRepository.save(any()) }
+        }
+
+        @Test
+        fun `should throw exception if merchant not found`() {
+            val body = TestFactory.paymentIntentRequestDto()
+
+            every {
+                merchantAuthService.getAuthenticatedMerchant()
+            } throws ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+            assertThrows<ResponseStatusException> { paymentService.createPaymentIntent(body) }
+            verify(exactly = 1) { merchantAuthService.getAuthenticatedMerchant() }
+            verify(exactly = 0) { paymentIntentRepository.save(any()) }
         }
     }
 }

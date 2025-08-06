@@ -1,10 +1,11 @@
-package com.blaise.paymentlater.controller.v1.admin
+package com.blaise.paymentlater.controller.v1.payments
 
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.PaymentIntentResponseDto
-import com.blaise.paymentlater.service.v1.admin.AdminPaymentServiceV1
+import com.blaise.paymentlater.service.v1.payment.PaymentServiceV1
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -12,8 +13,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -29,12 +33,12 @@ private data class PaymentIntentPageResponseDto(
 )
 
 @RestController
-@RequestMapping("/api/v1/admin/payments")
-@Tag(name = "Admin Payments", description = "Admin payments endpoints")
-class AdminPaymentControllerV1(
-    private val adminPaymentService: AdminPaymentServiceV1
+@RequestMapping("/api/v1")
+@Tag(name = "Payments", description = "Payments endpoints")
+class PaymentControllerV1(
+    private val paymentService: PaymentServiceV1
 ) {
-    @GetMapping
+    @GetMapping("/admin/payments")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "BearerToken")
     @Operation(
@@ -79,7 +83,7 @@ class AdminPaymentControllerV1(
         @Parameter(description = "Page size", example = "20")
         @RequestParam(defaultValue = "20") size: Int
     ): PageResponseDto<PaymentIntentResponseDto> =
-        adminPaymentService.search(
+        paymentService.getPayments(
             statuses = statuses?.map { PaymentStatus.valueOf(it) },
             currencies = currencies?.map { Currency.valueOf(it) },
             start = start?.let { Instant.parse(it) },
@@ -87,4 +91,39 @@ class AdminPaymentControllerV1(
             page,
             size
         )
+
+    @PostMapping("/merchant/payments")
+    @PreAuthorize("hasRole('MERCHANT')")
+    @SecurityRequirement(name = "ApiKey")
+    @Operation(
+        summary = "Create payment intent for a merchant",
+        security = [SecurityRequirement(name = "ApiKey")],
+        description = "Create payment intent for a merchant",
+        responses = [
+            ApiResponse(
+                responseCode = "201",
+                description = "Payment intent created successfully",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = PaymentIntentResponseDto::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+        ]
+    )
+    fun createPaymentIntent(
+        @Parameter(description = "Payment intent request details")
+        @Valid @RequestBody body: PaymentIntentRequestDto
+    ): PaymentIntentResponseDto = paymentService.createPaymentIntent(body)
 }
