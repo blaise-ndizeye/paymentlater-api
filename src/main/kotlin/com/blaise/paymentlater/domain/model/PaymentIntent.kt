@@ -6,7 +6,6 @@ import com.blaise.paymentlater.dto.request.BillableItemRequestDto
 import com.blaise.paymentlater.dto.request.PaymentMetadataRequestDto
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigDecimal
 import java.time.Duration
@@ -31,7 +30,7 @@ data class PaymentIntent(
 
     val createdAt: Instant = Instant.now(),
 
-    @Indexed(expireAfter = "0s")
+//    @Indexed(expireAfter = "0s")
     val expiresAt: Instant = Instant.now()
-        .plus(Duration.ofDays(1))
+        .plus(Duration.ofMinutes(5))
 )

@@ -1,5 +1,6 @@
 package com.blaise.paymentlater.repository.sub
 
+import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.util.buildMongoCriteria
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Query
+import java.time.Instant
 
 class PaymentIntentExtensionRepositoryImpl(
     private val mongoTemplate: MongoTemplate
@@ -48,5 +50,18 @@ class PaymentIntentExtensionRepositoryImpl(
         val list = mongoTemplate.find(query, PaymentIntent::class.java)
 
         return PageImpl(list, pageable, total)
+    }
+
+    override fun findPendingWithExpiredAtBefore(now: Instant): List<PaymentIntent> {
+        val criteria = buildMongoCriteria {
+            eq("status", PaymentStatus.PENDING.name)
+            lte("expiresAt", now)
+        }
+
+        val query = Query().apply {
+            criteria.forEach { addCriteria(it) }
+        }
+
+        return mongoTemplate.find(query, PaymentIntent::class.java)
     }
 }

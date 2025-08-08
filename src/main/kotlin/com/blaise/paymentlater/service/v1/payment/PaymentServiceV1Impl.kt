@@ -1,6 +1,7 @@
 package com.blaise.paymentlater.service.v1.payment
 
 import com.blaise.paymentlater.domain.enums.Currency
+import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
 import com.blaise.paymentlater.domain.model.Admin
@@ -17,6 +18,7 @@ import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import java.time.Instant
 
 private val log = KotlinLogging.logger {}
 
@@ -72,6 +74,16 @@ class PaymentServiceV1Impl(
         )
             .toPaymentIntentResponseDto()
             .also { log.info { "Created payment intent: ${it.id}" } }
+    }
+
+    override fun expireOldPaymentIntents(now: Instant) {
+        val expiredIntents = paymentIntentRepository.findPendingWithExpiredAtBefore(now)
+        log.info { "Found ${expiredIntents.size} expired payment intents" }
+        expiredIntents.forEach {
+            log.info { "Expired payment intent: ${it.id}" }
+            val updated = it.copy(status = PaymentStatus.EXPIRED)
+            paymentIntentRepository.save(updated)
+        }
     }
 
     override fun findById(id: String): PaymentIntent {

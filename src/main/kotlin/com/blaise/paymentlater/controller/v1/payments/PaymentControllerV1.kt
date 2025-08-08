@@ -74,6 +74,38 @@ class PaymentControllerV1(
         @Valid @RequestBody body: PaymentIntentRequestDto
     ): PaymentIntentResponseDto = paymentService.createPaymentIntent(body)
 
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('MERCHANT')")
+    @SecurityRequirement(name = "ApiKey")
+    @Operation(
+        summary = "Cancel a payment intent",
+        security = [SecurityRequirement(name = "ApiKey")],
+        description = "Cancel a payment intent",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Payment intent cancelled successfully",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = PaymentIntentResponseDto::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+        ]
+    )
+    fun cancelPaymentIntent(@PathVariable id: String): PaymentIntentResponseDto = TODO()
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
     @SecurityRequirement(name = "BearerToken")

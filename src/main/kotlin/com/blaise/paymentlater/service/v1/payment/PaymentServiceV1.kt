@@ -5,6 +5,7 @@ import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.PaymentIntentResponseDto
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
+import java.time.Instant
 
 interface PaymentServiceV1 {
     fun getPayments(
@@ -18,4 +19,6 @@ interface PaymentServiceV1 {
     fun findById(id: String): PaymentIntent
 
     fun createPaymentIntent(body: PaymentIntentRequestDto): PaymentIntentResponseDto
+
+    fun expireOldPaymentIntents(now: Instant)
 }

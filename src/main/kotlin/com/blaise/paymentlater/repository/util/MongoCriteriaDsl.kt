@@ -1,6 +1,8 @@
 package com.blaise.paymentlater.repository.util
 
 import org.springframework.data.mongodb.core.query.Criteria
+import java.time.Instant
+import java.util.Date
 
 class MongoCriteriaDsl {
     private val criteriaList = mutableListOf<Criteria>()
@@ -15,11 +17,17 @@ class MongoCriteriaDsl {
     }
 
     fun gte(field: String, value: Any?) {
-        value?.let { criteriaList.add(Criteria.where(field).gte(value)) }
+        when (value) {
+            is Instant -> criteriaList.add(Criteria.where(field).gte(Date.from(value)))
+            else -> value?.let { criteriaList.add(Criteria.where(field).gte(it)) }
+        }
     }
 
     fun lte(field: String, value: Any?) {
-        value?.let { criteriaList.add(Criteria.where(field).lte(value)) }
+        when (value) {
+            is Instant -> criteriaList.add(Criteria.where(field).lte(Date.from(value)))
+            else -> value?.let { criteriaList.add(Criteria.where(field).lte(it)) }
+        }
     }
 
     fun regex(field: String, value: String?) {
