@@ -32,5 +32,9 @@ data class PaymentIntent(
 
 //    @Indexed(expireAfter = "0s")
     val expiresAt: Instant = Instant.now()
-        .plus(Duration.ofMinutes(5))
+        .plus(Duration.ofHours(2)),
+
+    val cancelledAt: Instant? = null,
+
+    val cancelledBy: ObjectId? = null
 )

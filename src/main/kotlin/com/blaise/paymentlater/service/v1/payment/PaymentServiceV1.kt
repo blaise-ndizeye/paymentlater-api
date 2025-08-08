@@ -21,4 +21,6 @@ interface PaymentServiceV1 {
     fun createPaymentIntent(body: PaymentIntentRequestDto): PaymentIntentResponseDto
 
     fun expireOldPaymentIntents(now: Instant)
+
+    fun cancelPaymentIntent(paymentIntentId: String, user: Any): PaymentIntentResponseDto
 }

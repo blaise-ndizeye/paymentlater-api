@@ -74,12 +74,13 @@ class PaymentControllerV1(
         @Valid @RequestBody body: PaymentIntentRequestDto
     ): PaymentIntentResponseDto = paymentService.createPaymentIntent(body)
 
-    @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasRole('MERCHANT')")
+    @PatchMapping("/{paymentIntentId}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
     @SecurityRequirement(name = "ApiKey")
+    @SecurityRequirement(name = "BearerToken")
     @Operation(
         summary = "Cancel a payment intent",
-        security = [SecurityRequirement(name = "ApiKey")],
+        security = [SecurityRequirement(name = "ApiKey"), SecurityRequirement(name = "BearerToken")],
         description = "Cancel a payment intent",
         responses = [
             ApiResponse(
@@ -104,7 +105,14 @@ class PaymentControllerV1(
             ),
         ]
     )
-    fun cancelPaymentIntent(@PathVariable id: String): PaymentIntentResponseDto = TODO()
+    fun cancelPaymentIntent(
+        authentication: Authentication,
+        @Parameter(description = "Payment intent id")
+        @PathVariable paymentIntentId: String
+    ): PaymentIntentResponseDto = paymentService.cancelPaymentIntent(
+        paymentIntentId,
+        user = authentication.principal
+    )
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")

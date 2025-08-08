@@ -78,12 +78,43 @@ class PaymentServiceV1Impl(
 
     override fun expireOldPaymentIntents(now: Instant) {
         val expiredIntents = paymentIntentRepository.findPendingWithExpiredAtBefore(now)
-        log.info { "Found ${expiredIntents.size} expired payment intents" }
         expiredIntents.forEach {
             log.info { "Expired payment intent: ${it.id}" }
             val updated = it.copy(status = PaymentStatus.EXPIRED)
             paymentIntentRepository.save(updated)
         }
+    }
+
+    override fun cancelPaymentIntent(paymentIntentId: String, user: Any): PaymentIntentResponseDto {
+        val paymentIntent = findById(paymentIntentId)
+
+        if (paymentIntent.status != PaymentStatus.PENDING)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment intent is not pending")
+
+        val canceller = when (user) {
+            is Admin -> user.id
+            is Merchant -> {
+                if (user.id != paymentIntent.merchantId)
+                    throw ResponseStatusException(HttpStatus.FORBIDDEN)
+                user.id
+            }
+            else -> throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+
+        /*
+         * Possible when the payment intent is not yet marked as EXPIRED
+         * by the PaymentJob (see PaymentJob.expireOldPaymentIntents)
+         */
+        if (Instant.now().isAfter(paymentIntent.expiresAt))
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment intent is expired")
+
+        val updated = paymentIntent.copy(
+            status = PaymentStatus.CANCELLED,
+            cancelledAt = Instant.now(),
+            cancelledBy = canceller
+        )
+
+        return paymentIntentRepository.save(updated).toPaymentIntentResponseDto()
     }
 
     override fun findById(id: String): PaymentIntent {

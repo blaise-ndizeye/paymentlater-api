@@ -1,6 +1,7 @@
 package com.blaise.paymentlater.service.v1.payment
 
 import com.blaise.paymentlater.domain.enums.Currency
+import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
+import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -158,6 +160,74 @@ class PaymentServiceV1ImplTest {
 
             assertThrows<ResponseStatusException> { paymentService.createPaymentIntent(body) }
             verify(exactly = 1) { merchantAuthService.getAuthenticatedMerchant() }
+            verify(exactly = 0) { paymentIntentRepository.save(any()) }
+        }
+    }
+
+    @Nested
+    @DisplayName("CANCEL PAYMENT INTENT")
+    inner class CancelPaymentIntent {
+
+        @Test
+        fun `should cancel payment intent`() {
+            val id = "123"
+            val paymentIntent: PaymentIntent = TestFactory.paymentIntent1()
+            val paymentServiceSpy = spyk(paymentService)
+
+            every { paymentServiceSpy.findById(id) } returns paymentIntent
+            every { paymentIntentRepository.save(any()) } returns paymentIntent
+
+            val result = paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+
+            assertEquals(paymentIntent.toPaymentIntentResponseDto(), result)
+            verify(exactly = 1) { paymentServiceSpy.findById(id) }
+        }
+
+        @Test
+        fun `should throw exception if payment intent not found`() {
+            val id = "123"
+            val paymentServiceSpy = spyk(paymentService)
+
+            every { paymentServiceSpy.findById(id) } throws ResponseStatusException(HttpStatus.NOT_FOUND)
+
+            assertThrows<ResponseStatusException> {
+                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+            }
+
+            verify(exactly = 1) { paymentServiceSpy.findById(id) }
+            verify(exactly = 0) { paymentIntentRepository.save(any()) }
+        }
+
+        @Test
+        fun `should throw exception if payment status is not pending`() {
+            val id = "123"
+            val paymentIntent = TestFactory.paymentIntent1().copy(status = PaymentStatus.FAILED)
+            val paymentServiceSpy = spyk(paymentService)
+
+            every { paymentServiceSpy.findById(id) } returns paymentIntent
+
+            assertThrows<ResponseStatusException> {
+                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+            }
+
+            verify(exactly = 1) { paymentServiceSpy.findById(id) }
+            verify(exactly = 0) { paymentIntentRepository.save(any()) }
+        }
+
+        @Test
+        fun `should throw exception if current date is after expiresAt`() {
+            val id = "123"
+            val paymentIntent = TestFactory.paymentIntent1()
+                .copy(expiresAt = Instant.now().minusSeconds(1))
+            val paymentServiceSpy = spyk(paymentService)
+
+            every { paymentServiceSpy.findById(id) } returns paymentIntent
+
+            assertThrows<ResponseStatusException> {
+                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+            }
+
+            verify(exactly = 1) { paymentServiceSpy.findById(id) }
             verify(exactly = 0) { paymentIntentRepository.save(any()) }
         }
     }
