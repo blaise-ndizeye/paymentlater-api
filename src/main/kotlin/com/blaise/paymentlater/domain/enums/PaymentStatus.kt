@@ -5,5 +5,7 @@ enum class PaymentStatus {
     COMPLETED,
     FAILED,
     CANCELLED,
-    EXPIRED
+    EXPIRED,
+    REFUNDED,
+    PARTIALLY_REFUNDED
 }

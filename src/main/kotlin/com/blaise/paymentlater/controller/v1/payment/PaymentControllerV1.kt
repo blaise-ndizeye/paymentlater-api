@@ -1,4 +1,4 @@
-package com.blaise.paymentlater.controller.v1.payments
+package com.blaise.paymentlater.controller.v1.payment
 
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
@@ -25,18 +25,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
-@Schema(description = "Paginated response of PaymentIntent")
-private data class PaymentIntentPageResponseDto(
-    val content: List<PaymentIntentResponseDto>,
-    val totalPages: Int,
-    val totalElements: Long,
-    val page: Int,
-    val size: Int
-)
-
 @RestController
 @RequestMapping("/api/v1/payments")
-@Tag(name = "Payments", description = "Payments endpoints")
+@Tag(name = "Payments", description = "Payment endpoints")
 class PaymentControllerV1(
     private val paymentService: PaymentServiceV1
 ) {
@@ -267,3 +258,12 @@ class PaymentControllerV1(
         @PathVariable id: String
     ): PaymentIntentResponseDto = paymentService.getPayment(id, user)
 }
+
+@Schema(description = "Paginated response of PaymentIntent")
+private data class PaymentIntentPageResponseDto(
+    val content: List<PaymentIntentResponseDto>,
+    val totalPages: Int,
+    val totalElements: Long,
+    val page: Int,
+    val size: Int
+)
