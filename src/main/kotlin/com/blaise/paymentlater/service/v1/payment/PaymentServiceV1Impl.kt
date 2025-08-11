@@ -1,10 +1,6 @@
 package com.blaise.paymentlater.service.v1.payment
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.PaymentMethod
-import com.blaise.paymentlater.domain.enums.PaymentStatus
-import com.blaise.paymentlater.domain.enums.TransactionStatus
-import com.blaise.paymentlater.domain.enums.UserRole
+import com.blaise.paymentlater.domain.enums.*
 import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
 import com.blaise.paymentlater.domain.model.Admin
@@ -135,15 +131,22 @@ class PaymentServiceV1Impl(
         paymentIntentId: String,
         body: ConfirmPaymentIntentRequestDto
     ): PaymentIntentResponseDto {
-        validateConfirmPaymentRequest(body)
+        if (body.status == TransactionStatus.FAILED.name)
+            require(!body.metadata.failureReason.isNullOrBlank()) {
+                "failureReason is required when fail request parameter is true"
+            }
 
         val paymentIntent = findById(paymentIntentId)
         val merchant = merchantAuthService.getAuthenticatedMerchant()
 
         ensureConfirmPaymentIntentAuthorization(paymentIntent, merchant)
 
+        val newPaymentIntentStatus =
+            if (body.status == TransactionStatus.FAILED.name) PaymentStatus.FAILED
+            else PaymentStatus.COMPLETED // Since the body is validated to only have FAILED or SUCCESS
+
         val updated = paymentIntent.copy(
-            status = mapStatus(TransactionStatus.valueOf(body.status)),
+            status = newPaymentIntentStatus,
         )
 
         val transaction = transactionService.save(
@@ -193,25 +196,5 @@ class PaymentServiceV1Impl(
 
         if (Instant.now().isAfter(paymentIntent.expiresAt))
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment intent is expired")
-    }
-
-    private fun mapStatus(status: TransactionStatus) = when (status) {
-        TransactionStatus.FAILED -> PaymentStatus.FAILED
-        TransactionStatus.REFUNDED -> PaymentStatus.COMPLETED
-        else -> PaymentStatus.COMPLETED
-    }
-
-    private fun validateConfirmPaymentRequest(body: ConfirmPaymentIntentRequestDto) {
-        when (TransactionStatus.valueOf(body.status)) {
-            TransactionStatus.FAILED -> {
-                requireNotNull(body.metadata.failureReason) { "failureReason is required when status is FAILED" }
-            }
-
-            TransactionStatus.REFUNDED -> {
-                requireNotNull(body.metadata.refundReason) { "refundReason is required when status is REFUNDED" }
-            }
-
-            else -> {}
-        }
     }
 }

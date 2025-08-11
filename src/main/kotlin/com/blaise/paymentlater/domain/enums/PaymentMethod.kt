@@ -5,5 +5,4 @@ enum class PaymentMethod {
     CASH,
     MOBILE_MONEY,
     BANK_TRANSFER,
-    IREMBO_PAY,
 }
