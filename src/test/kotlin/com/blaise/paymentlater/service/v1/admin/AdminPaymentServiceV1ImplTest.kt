@@ -2,6 +2,7 @@ package com.blaise.paymentlater.service.v1.admin
 
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.PaymentIntentRepository
 import com.blaise.paymentlater.util.TestFactory
 import io.mockk.clearMocks
@@ -43,20 +44,18 @@ class AdminPaymentServiceV1ImplTest {
             val currencies = listOf(Currency.RWF, Currency.USD)
             val start = Instant.parse("2022-01-01T00:00:00.000Z")
             val end = Instant.parse("2022-01-02T00:00:00.000Z")
-            val pageable = PageRequest.of(
-                page,
-                size,
-                Sort.Direction.DESC,
-                "createdAt"
+            val filter = PaymentIntentFilterDto(
+                statuses = statuses,
+                currencies = currencies,
+                start = start,
+                end = end
             )
 
             every {
-                paymentIntentRepository.findByAdminFilters(
-                    statuses,
-                    currencies = currencies.map { it.name },
-                    start,
-                    end,
-                    pageable
+                paymentIntentRepository.search(
+                    filter,
+                    page,
+                    size
                 )
             } returns PageImpl(
                 listOf(
@@ -73,12 +72,10 @@ class AdminPaymentServiceV1ImplTest {
             assertEquals(2, result.content.size)
 
             verify(exactly = 1) {
-                paymentIntentRepository.findByAdminFilters(
-                    statuses,
-                    currencies = currencies.map { it.name },
-                    start,
-                    end,
-                    pageable
+                paymentIntentRepository.search(
+                    filter,
+                    page,
+                    size
                 )
             }
         }
@@ -91,25 +88,18 @@ class AdminPaymentServiceV1ImplTest {
             val currencies = listOf(Currency.RWF, Currency.USD)
             val start = Instant.parse("2022-01-01T00:00:00.000Z")
             val end = Instant.parse("2022-01-02T00:00:00.000Z")
-            val pageable = PageRequest.of(
-                page,
-                size,
-                Sort.Direction.DESC,
-                "createdAt"
+            val filter = PaymentIntentFilterDto(
+                statuses = statuses,
+                currencies = currencies,
+                start = start,
+                end = end
             )
 
             every {
-                paymentIntentRepository.findByAdminFilters(
-                    statuses,
-                    currencies = currencies.map { it.name },
-                    start,
-                    end,
-                    PageRequest.of(
-                        page,
-                        size,
-                        Sort.Direction.DESC,
-                        "createdAt"
-                    )
+                paymentIntentRepository.search(
+                    filter,
+                    page,
+                    size
                 )
             } returns PageImpl(emptyList())
 
@@ -121,12 +111,10 @@ class AdminPaymentServiceV1ImplTest {
             assertEquals(0, result.content.size)
 
             verify(exactly = 1) {
-                paymentIntentRepository.findByAdminFilters(
-                    statuses,
-                    currencies = currencies.map { it.name },
-                    start,
-                    end,
-                    pageable
+                paymentIntentRepository.search(
+                    filter,
+                    page,
+                    size
                 )
             }
         }

@@ -10,6 +10,7 @@ fun PaymentIntent.toPaymentIntentResponseDto(): PaymentIntentResponseDto = Payme
     status = status,
     metadata = metadata,
     createdAt = createdAt.toString(),
+    expiresAt = expiresAt.toString(),
     merchantId = merchantId.toHexString(),
     items = items
 )

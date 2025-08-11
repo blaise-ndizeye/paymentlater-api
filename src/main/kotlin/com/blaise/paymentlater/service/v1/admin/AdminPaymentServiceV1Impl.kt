@@ -6,9 +6,8 @@ import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.PaymentIntentResponseDto
+import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.PaymentIntentRepository
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -27,18 +26,16 @@ class AdminPaymentServiceV1Impl(
         page: Int,
         size: Int
     ): PageResponseDto<PaymentIntentResponseDto> {
-        val pageable = PageRequest.of(
-            page,
-            size,
-            Sort.Direction.DESC,
-            "createdAt"
+        val filter = PaymentIntentFilterDto(
+            statuses = statuses,
+            currencies = currencies,
+            start = start,
+            end = end
         )
-        val paymentIntents = paymentIntentRepository.findByAdminFilters(
-            statuses,
-            currencies = currencies?.map { it.name },
-            start,
-            end,
-            pageable
+        val paymentIntents = paymentIntentRepository.search(
+            filter,
+            page,
+            size
         )
 
         return paymentIntents.map {

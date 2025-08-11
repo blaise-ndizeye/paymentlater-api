@@ -2,8 +2,8 @@ package com.blaise.paymentlater.dto.response
 
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
-import com.blaise.paymentlater.domain.model.sub.BillableItem
-import com.blaise.paymentlater.domain.model.sub.PaymentMetadata
+import com.blaise.paymentlater.dto.request.BillableItemRequestDto
+import com.blaise.paymentlater.dto.request.PaymentMetadataRequestDto
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 
@@ -13,7 +13,6 @@ data class PaymentIntentResponseDto(
 
     val merchantId: String,
 
-    val items: List<BillableItem>,
 
     val amount: BigDecimal,
 
@@ -21,7 +20,12 @@ data class PaymentIntentResponseDto(
 
     val status: PaymentStatus,
 
-    val metadata: PaymentMetadata,
+    val createdAt: String,
 
-    val createdAt: String
+    val expiresAt: String,
+
+    val items: List<BillableItemRequestDto>,
+
+    val metadata: PaymentMetadataRequestDto,
+
 )
