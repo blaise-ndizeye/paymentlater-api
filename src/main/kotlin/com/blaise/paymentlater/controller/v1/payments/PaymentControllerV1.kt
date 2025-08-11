@@ -2,6 +2,7 @@ package com.blaise.paymentlater.controller.v1.payments
 
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.domain.enums.TransactionStatus
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.ConfirmPaymentIntentRequestDto
 import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto
@@ -147,10 +148,23 @@ class PaymentControllerV1(
         ]
     )
     fun confirmPaymentIntent(
+        @Parameter(description = "Whether to fail the payment intent")
+        @RequestParam("fail", required = false) fail: Boolean = false,
+
         @Parameter(description = "Payment intent id")
         @PathVariable paymentIntentId: String,
+
         @Valid @RequestBody body: ConfirmPaymentIntentRequestDto
-    ): PaymentIntentResponseDto = paymentService.confirmPaymentIntent(paymentIntentId, body)
+    ): PaymentIntentResponseDto {
+        val requestBody = body.copy(
+            status = if (fail) TransactionStatus.FAILED.name else TransactionStatus.SUCCESS.name
+        )
+        /* Since the body is validated to only have FAILED or SUCCESS which is mapped to TransactionStatus
+         * to update the status of the payment intent in PaymentService.confirmPaymentIntent
+         */
+
+        return paymentService.confirmPaymentIntent(paymentIntentId, requestBody)
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
