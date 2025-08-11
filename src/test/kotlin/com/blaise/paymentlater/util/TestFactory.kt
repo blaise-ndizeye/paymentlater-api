@@ -1,13 +1,16 @@
 package com.blaise.paymentlater.util
 
 import com.blaise.paymentlater.domain.enums.Currency
+import com.blaise.paymentlater.domain.enums.PaymentMethod
 import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.domain.enums.TransactionStatus
+import com.blaise.paymentlater.domain.enums.UserRole
 import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.Admin
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.PaymentIntent
+import com.blaise.paymentlater.domain.model.Transaction
 import com.blaise.paymentlater.dto.request.*
-import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import org.bson.types.ObjectId
 import java.math.BigDecimal
 
@@ -97,5 +100,46 @@ object TestFactory {
         phone = "1234567890",
         email = "john@doe",
         description = "description1",
+    )
+
+    fun transactionMetadataRequestDto() = TransactionMetadataRequestDto(
+        referenceId = "ref1",
+        description = "description1",
+        customerName = "John Doe",
+        customerEmail = "john@doe",
+        customerPhone = "1234567890",
+        refundReason = "refundReason1",
+        failureReason = "failureReason2",
+        extra = mapOf("key1" to "value1", "key2" to "value2")
+    )
+
+    fun confirmPaymentIntentRequestDto() = ConfirmPaymentIntentRequestDto(
+        status = "SUCCESS",
+        paymentMethod = "CASH",
+        metadata = transactionMetadataRequestDto()
+    )
+
+    fun transaction1() = Transaction(
+        id = ObjectId("688343c2b89f9cf214b8aae5"),
+        paymentIntentId = ObjectId(paymentIntent1().id.toHexString()),
+        paymentMethod = PaymentMethod.CASH,
+        amount = BigDecimal.valueOf(100.0),
+        currency = Currency.RWF,
+        status = TransactionStatus.SUCCESS,
+        confirmedBy = ObjectId(merchant().id.toHexString()),
+        confirmedByRole = UserRole.MERCHANT,
+        metadata = transactionMetadataRequestDto()
+    )
+
+    fun transaction2() = Transaction(
+        id = ObjectId("699343c2b89f9cf214b8eeb5"),
+        paymentIntentId = ObjectId(paymentIntent2().id.toHexString()),
+        paymentMethod = PaymentMethod.CASH,
+        amount = BigDecimal.valueOf(99.9),
+        currency = Currency.USD,
+        status = TransactionStatus.FAILED,
+        confirmedBy = ObjectId(merchant().id.toHexString()),
+        confirmedByRole = UserRole.MERCHANT,
+        metadata = transactionMetadataRequestDto()
     )
 }

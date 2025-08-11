@@ -3,6 +3,7 @@ package com.blaise.paymentlater.controller.v1.payments
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.model.Merchant
+import com.blaise.paymentlater.dto.request.ConfirmPaymentIntentRequestDto
 import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto
 import com.blaise.paymentlater.dto.response.ApiErrorResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
@@ -113,6 +114,43 @@ class PaymentControllerV1(
         paymentIntentId,
         user = authentication.principal
     )
+
+    @PatchMapping("/{paymentIntentId}/confirm")
+    @PreAuthorize("hasRole('MERCHANT')")
+    @SecurityRequirement(name = "ApiKey")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Confirm a payment intent",
+        security = [SecurityRequirement(name = "ApiKey"), SecurityRequirement(name = "BearerToken")],
+        description = "Confirm a payment intent",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Payment intent confirmed successfully",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = PaymentIntentResponseDto::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+        ]
+    )
+    fun confirmPaymentIntent(
+        @Parameter(description = "Payment intent id")
+        @PathVariable paymentIntentId: String,
+        @Valid @RequestBody body: ConfirmPaymentIntentRequestDto
+    ): PaymentIntentResponseDto = paymentService.confirmPaymentIntent(paymentIntentId, body)
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")

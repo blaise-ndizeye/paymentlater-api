@@ -1,5 +1,6 @@
 package com.blaise.paymentlater.notification
 
+import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.exception.EmailSendingException
 import com.mongodb.MongoSocketReadTimeoutException
 import com.mongodb.MongoTimeoutException
@@ -13,6 +14,7 @@ import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
+import java.math.BigDecimal
 import java.net.SocketTimeoutException
 
 private val log = KotlinLogging.logger {}
@@ -53,6 +55,52 @@ class MailService(
         return sendApiKeyEmail(to, name, apiKey, htmlTemplate)
     }
 
+    @Retryable(
+        value = [
+            EmailSendingException::class,
+            MongoTimeoutException::class,
+            MongoSocketReadTimeoutException::class,
+            SocketTimeoutException::class
+        ],
+        maxAttempts = 3,
+        backoff = Backoff(delay = 2000, multiplier = 2.0, maxDelay = 10000)
+    )
+    fun sendConfirmPaymentIntentEmail(
+        to: String,
+        name: String,
+        status: String,
+        amount: BigDecimal,
+        currency: Currency,
+        referenceId: String,
+        description: String?
+    ) {
+        val htmlTemplate = "mail/payment/payment-confirmation.html"
+        val context = Context().apply {
+            setVariable("name", name)
+            setVariable("status", status)
+            setVariable("amount", amount)
+            setVariable("currency", currency)
+            setVariable("referenceId", referenceId)
+            setVariable("description", description ?: "No description provided.")
+        }
+        val content = templateEngine.process(htmlTemplate, context)
+        val message = javaMailSender.createMimeMessage()
+
+        try {
+            val helper = MimeMessageHelper(message, true)
+            helper.setTo(to)
+            helper.setSubject("Payment $status – PaymentLater")
+            helper.setText(content, true)
+            javaMailSender.send(message)
+        } catch (e: MessagingException) {
+            log.error("PAYMENT: Email message build failed for $to")
+            throw EmailSendingException("Email message build failed for $to", e)
+        } catch (e: MailException) {
+            log.error("PAYMENT: Email sending failed to $to")
+            throw EmailSendingException("Could not send the email", e)
+        }
+    }
+
     private fun sendApiKeyEmail(to: String, name: String, apiKey: String, htmlTemplate: String) {
         val context = Context().apply {
             setVariable("name", name)
@@ -70,10 +118,10 @@ class MailService(
 
             javaMailSender.send(message)
         } catch (e: MessagingException) {
-            log.error("Email message build failed for $to")
+            log.error("API-KEY: Email message build failed for $to")
             throw EmailSendingException("Email message build failed for $to", e)
         } catch (e: MailException) {
-            log.error("Email sending failed to $to")
+            log.error("API-KEY: Email sending failed to $to")
             throw EmailSendingException("Could not send the email", e)
         }
     }

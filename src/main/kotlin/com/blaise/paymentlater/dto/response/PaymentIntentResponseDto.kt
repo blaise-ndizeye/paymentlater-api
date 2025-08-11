@@ -13,7 +13,6 @@ data class PaymentIntentResponseDto(
 
     val merchantId: String,
 
-    val items: List<BillableItemRequestDto>,
 
     val amount: BigDecimal,
 
@@ -21,7 +20,12 @@ data class PaymentIntentResponseDto(
 
     val status: PaymentStatus,
 
+    val createdAt: String,
+
+    val expiresAt: String,
+
+    val items: List<BillableItemRequestDto>,
+
     val metadata: PaymentMetadataRequestDto,
 
-    val createdAt: String
 )
