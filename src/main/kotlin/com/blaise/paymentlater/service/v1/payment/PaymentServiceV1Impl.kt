@@ -123,7 +123,9 @@ class PaymentServiceV1Impl(
             cancelledBy = canceller
         )
 
-        return paymentIntentRepository.save(updated).toPaymentIntentResponseDto()
+        return paymentIntentRepository.save(updated)
+            .toPaymentIntentResponseDto()
+            .also { log.info { "Cancelled payment intent: ${it.id}" }}
     }
 
     @Transactional
@@ -172,7 +174,9 @@ class PaymentServiceV1Impl(
             )
         )
 
-        return updatedPaymentIntent.toPaymentIntentResponseDto()
+        return updatedPaymentIntent
+            .toPaymentIntentResponseDto()
+            .also { log.info { "Confirmed payment intent: ${it.id}" } }
     }
 
     override fun findById(id: String): PaymentIntent {
