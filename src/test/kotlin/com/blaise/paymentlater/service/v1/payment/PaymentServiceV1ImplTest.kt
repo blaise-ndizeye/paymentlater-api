@@ -6,8 +6,8 @@ import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.PaymentIntentRepository
+import com.blaise.paymentlater.repository.TransactionRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1Impl
-import com.blaise.paymentlater.service.v1.transaction.TransactionServiceV1Impl
 import com.blaise.paymentlater.util.TestFactory
 import io.mockk.*
 import io.mockk.junit5.MockKExtension
@@ -27,8 +27,8 @@ import kotlin.test.assertEquals
 @ExtendWith(MockKExtension::class)
 class PaymentServiceV1ImplTest {
     private val paymentIntentRepository: PaymentIntentRepository = mockk()
+    private val transactionRepository: TransactionRepository = mockk()
     private val merchantAuthService: MerchantAuthServiceV1Impl = mockk()
-    private val transactionService: TransactionServiceV1Impl = mockk()
     private val eventPublisher: ApplicationEventPublisher = mockk(relaxed = true)
     private lateinit var paymentService: PaymentServiceV1Impl
 
@@ -36,11 +36,16 @@ class PaymentServiceV1ImplTest {
     fun setup() {
         paymentService = PaymentServiceV1Impl(
             paymentIntentRepository,
+            transactionRepository,
             merchantAuthService,
-            transactionService,
             eventPublisher
         )
-        clearMocks(paymentIntentRepository)
+        clearMocks(
+            paymentIntentRepository,
+            transactionRepository,
+            merchantAuthService,
+            eventPublisher
+        )
     }
 
     @Nested
@@ -255,7 +260,7 @@ class PaymentServiceV1ImplTest {
             every { paymentServiceSpy.findById(id) } returns paymentIntent
             every { merchantAuthService.getAuthenticatedMerchant() } returns merchant
             every { paymentIntentRepository.save(any()) } returns paymentIntent
-            every { transactionService.save(any()) } returns TestFactory.transaction1()
+            every { transactionRepository.save(any()) } returns TestFactory.transaction1()
             every { eventPublisher.publishEvent(any()) } just Runs
 
             val result = paymentServiceSpy.confirmPaymentIntent(id, TestFactory.confirmPaymentIntentRequestDto())
@@ -263,7 +268,7 @@ class PaymentServiceV1ImplTest {
             assertEquals(paymentIntent.toPaymentIntentResponseDto(), result)
             verify(exactly = 1) { paymentServiceSpy.findById(id) }
             verify(exactly = 1) { paymentIntentRepository.save(any()) }
-            verify(exactly = 1) { transactionService.save(any()) }
+            verify(exactly = 1) { transactionRepository.save(any()) }
         }
 
         @Test

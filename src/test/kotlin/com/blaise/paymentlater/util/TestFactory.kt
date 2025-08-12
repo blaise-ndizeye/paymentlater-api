@@ -3,16 +3,19 @@ package com.blaise.paymentlater.util
 import com.blaise.paymentlater.domain.enums.Currency
 import com.blaise.paymentlater.domain.enums.PaymentMethod
 import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.domain.enums.RefundStatus
 import com.blaise.paymentlater.domain.enums.TransactionStatus
 import com.blaise.paymentlater.domain.enums.UserRole
 import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.Admin
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.PaymentIntent
+import com.blaise.paymentlater.domain.model.Refund
 import com.blaise.paymentlater.domain.model.Transaction
 import com.blaise.paymentlater.dto.request.*
 import org.bson.types.ObjectId
 import java.math.BigDecimal
+import java.time.Instant
 
 object TestFactory {
     fun admin(
@@ -141,5 +144,31 @@ object TestFactory {
         confirmedBy = ObjectId(merchant().id.toHexString()),
         confirmedByRole = UserRole.MERCHANT,
         metadata = transactionMetadataRequestDto()
+    )
+
+    fun refund1() = Refund(
+        id = ObjectId("688343c2b89f9cf214b8aae5"),
+        transactionId = ObjectId(transaction1().id.toHexString()),
+        amount = BigDecimal.valueOf(10.0),
+        currency = Currency.RWF,
+        reason = "reason1",
+        status = RefundStatus.PENDING,
+        requestedAt = Instant.parse("2022-01-01T00:00:00Z")
+    )
+
+    fun refund2() = Refund(
+        id = ObjectId("699343c2b89f9cf214b8eeb5"),
+        transactionId = ObjectId(transaction2().id.toHexString()),
+        amount = BigDecimal.valueOf(99.9),
+        currency = Currency.USD,
+        reason = "reason2",
+        status = RefundStatus.APPROVED,
+        requestedAt = Instant.parse("2024-01-01T00:00:00Z")
+
+    )
+
+    fun refundTransactionRequestDto() = RefundTransactionRequestDto(
+        amount = BigDecimal.valueOf(10.0),
+        reason = "reason1",
     )
 }

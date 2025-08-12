@@ -22,10 +22,10 @@ class SharedSecurityConfig(
     @Bean
     fun sharedSecurityFilterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
         return httpSecurity
-            .securityMatcher("/api/v1/payments/**")
+            .securityMatcher("/api/v1/payments/**", "/api/v1/transactions/**")
             .csrf { csrf -> csrf.disable() }
             .sessionManagement { session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .authorizeHttpRequests { authorize -> authorize.anyRequest().permitAll() }
+            .authorizeHttpRequests { authorize -> authorize.anyRequest().authenticated() }
             .exceptionHandling { configurer ->
                 configurer.authenticationEntryPoint(
                     HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)

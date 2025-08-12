@@ -6,12 +6,14 @@ import com.blaise.paymentlater.domain.enums.TransactionStatus
 import com.blaise.paymentlater.domain.enums.UserRole
 import com.blaise.paymentlater.dto.request.TransactionMetadataRequestDto
 import org.bson.types.ObjectId
+import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigDecimal
 import java.time.Instant
 
 @Document("transactions")
 data class Transaction(
+    @Id
     val id: ObjectId = ObjectId(),
 
     val paymentIntentId: ObjectId,

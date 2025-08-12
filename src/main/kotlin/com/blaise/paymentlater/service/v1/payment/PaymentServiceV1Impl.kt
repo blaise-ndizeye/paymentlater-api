@@ -14,8 +14,8 @@ import com.blaise.paymentlater.dto.response.PaymentIntentResponseDto
 import com.blaise.paymentlater.dto.shared.PaymentIntentConfirmedEventDto
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.PaymentIntentRepository
+import com.blaise.paymentlater.repository.TransactionRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
-import com.blaise.paymentlater.service.v1.transaction.TransactionServiceV1
 import mu.KotlinLogging
 import org.bson.types.ObjectId
 import org.springframework.context.ApplicationEventPublisher
@@ -30,8 +30,8 @@ private val log = KotlinLogging.logger {}
 @Service
 class PaymentServiceV1Impl(
     private val paymentIntentRepository: PaymentIntentRepository,
+    private val transactionRepository: TransactionRepository,
     private val merchantAuthService: MerchantAuthServiceV1,
-    private val transactionService: TransactionServiceV1,
     private val eventPublisher: ApplicationEventPublisher,
 ) : PaymentServiceV1 {
 
@@ -151,7 +151,7 @@ class PaymentServiceV1Impl(
             status = newPaymentIntentStatus,
         )
 
-        val transaction = transactionService.save(
+        val transaction = transactionRepository.save(
             Transaction(
                 paymentIntentId = updated.id,
                 paymentMethod = PaymentMethod.valueOf(body.paymentMethod),
