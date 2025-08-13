@@ -25,6 +25,10 @@ data class Refund(
 
     val requestedAt: Instant = Instant.now(),
 
+    val approvedBy: String? = null,
+
+    val rejectedBy: String? = null,
+
     val approvedAt: Instant? = null,
 
     val rejectedAt: Instant? = null,

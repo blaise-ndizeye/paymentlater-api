@@ -9,8 +9,10 @@ import com.blaise.paymentlater.notification.MailService
 import com.blaise.paymentlater.repository.MerchantRepository
 import com.blaise.paymentlater.security.merchant.ApiKeyConfig
 import mu.KotlinLogging
+import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -54,6 +56,10 @@ class MerchantAuthServiceV1Impl(
         log.info { "Merchant registered: ${newMerchant.id}" }
         return newMerchant.toMerchantRegisterResponseDto().copy(apiKey = rawApiKey)
     }
+
+    @PreAuthorize("hasAnyRole('MERCHANT', 'ADMIN')")
+    override fun findById(id: ObjectId): Merchant = merchantRepository.findById(id)
+        .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND) }
 
     override fun findByEmail(email: String): Merchant = merchantRepository.findByEmail(email)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Merchant not found")

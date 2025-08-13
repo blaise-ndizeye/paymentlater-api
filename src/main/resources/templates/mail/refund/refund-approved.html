@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Your API Key – PaymentLater</title>
+    <meta charset="UTF-8">
+    <title>Refund Approved</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,25 +61,27 @@
 <table class="main-table">
     <tr>
         <td class="header">
-            <h1>Welcome to PaymentLater, <span th:text="${name}">Merchant</span>!</h1>
+            <h1>Refund Approved</h1>
         </td>
     </tr>
 
     <tr>
         <td class="section">
-            <p>We're excited to have you on board. Here is your unique API key:</p>
+            <p>Hello, <strong th:text="${name}">Customer</strong>,</p>
+            <p>Your refund request has been approved with the following details:</p>
 
-            <div style="background-color: #f0f0f0; padding: 12px; border-radius: 4px; font-weight: bold; font-size: 1.1em; word-break: break-word; text-align: center;"
-                 th:text="${apiKey}">your-api-key</div>
+            <table>
+                <tr>
+                    <td>Amount</td>
+                    <td class="bold" th:text="${amount} + ' ' + ${currency}">50 USD</td>
+                </tr>
+                <tr>
+                    <td>Reason</td>
+                    <td th:text="${reason}">Duplicate payment</td>
+                </tr>
+            </table>
 
-            <p style="margin-top: 20px;">
-                Please keep this key safe and never share it publicly.
-                You'll use it to authenticate your requests to our system.
-            </p>
-
-            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
-                If you did not register for this service, please contact us immediately.
-            </p>
+            <p style="margin-top: 20px;">If you have any questions, please contact our support team.</p>
         </td>
     </tr>
 

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.web.server.ResponseStatusException
+import java.math.BigDecimal
 
 @ExtendWith(MockKExtension::class)
 class TransactionServiceV1ImplTest {
@@ -55,6 +56,9 @@ class TransactionServiceV1ImplTest {
                 TestFactory.paymentIntent1().copy(status = PaymentStatus.COMPLETED)
             )
             every { merchantAuthService.getAuthenticatedMerchant() } returns TestFactory.merchant()
+            every {
+                refundRepository.sumApprovedRefundsForPaymentIntent(any())
+            } returns body.amount
             every { refundRepository.save(any()) } returns TestFactory.refund1()
 
             val result = transactionServiceSpy.requestRefundTransaction(transactionId, body)
@@ -115,6 +119,34 @@ class TransactionServiceV1ImplTest {
                 TestFactory.paymentIntent1().copy(status = PaymentStatus.COMPLETED)
             )
             every { merchantAuthService.getAuthenticatedMerchant() } returns TestFactory.merchant()
+
+            assertThrows<ResponseStatusException> {
+                transactionServiceSpy.requestRefundTransaction(transactionId, body)
+            }
+
+            verify { transactionServiceSpy.getTransactionAndAssociatedPaymentIntent(transactionId) wasNot Called }
+            verify { refundRepository.save(any()) wasNot Called }
+        }
+
+        @Test
+        fun `should throw exception if requested refund amount exceeds remaining refundable balance`() {
+            val transactionId = "trans123"
+            val transaction = TestFactory.transaction1()
+            val body = TestFactory.refundTransactionRequestDto().copy(amount = BigDecimal.TEN)
+            val paymentIntent = TestFactory.paymentIntent1().copy(
+                status = PaymentStatus.COMPLETED,
+                amount = BigDecimal.TEN.times(BigDecimal.TWO)
+            )
+            val transactionServiceSpy = spyk(transactionService)
+
+            every { transactionServiceSpy.getTransactionAndAssociatedPaymentIntent(transactionId) } returns Pair(
+                transaction,
+                paymentIntent
+            )
+            every { merchantAuthService.getAuthenticatedMerchant() } returns TestFactory.merchant()
+            every {
+                refundRepository.sumApprovedRefundsForPaymentIntent(any())
+            } returns paymentIntent.amount
 
             assertThrows<ResponseStatusException> {
                 transactionServiceSpy.requestRefundTransaction(transactionId, body)

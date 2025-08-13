@@ -28,9 +28,5 @@ data class Transaction(
 
     val confirmedAt: Instant = Instant.now(),
 
-    val confirmedBy: ObjectId,
-
-    val confirmedByRole: UserRole,
-
     val metadata: TransactionMetadataRequestDto,
 )

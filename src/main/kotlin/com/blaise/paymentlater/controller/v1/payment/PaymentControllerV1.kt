@@ -110,10 +110,9 @@ class PaymentControllerV1(
     @PatchMapping("/{paymentIntentId}/confirm")
     @PreAuthorize("hasRole('MERCHANT')")
     @SecurityRequirement(name = "ApiKey")
-    @SecurityRequirement(name = "BearerToken")
     @Operation(
         summary = "Confirm a payment intent",
-        security = [SecurityRequirement(name = "ApiKey"), SecurityRequirement(name = "BearerToken")],
+        security = [SecurityRequirement(name = "ApiKey")],
         description = "Confirm a payment intent",
         responses = [
             ApiResponse(

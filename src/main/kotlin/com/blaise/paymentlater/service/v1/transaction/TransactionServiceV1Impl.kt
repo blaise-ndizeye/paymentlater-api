@@ -45,20 +45,17 @@ class TransactionServiceV1Impl(
         if (merchant.id != paymentIntent.merchantId)
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        if (body.amount > transaction.amount) throw ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Refund amount cannot be greater than transaction amount"
-        )
+        if (paymentIntent.status !in listOf(PaymentStatus.COMPLETED, PaymentStatus.PARTIALLY_REFUNDED))
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment intent is not eligible for refund")
 
-        if (paymentIntent.status != PaymentStatus.COMPLETED) throw ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Payment intent is not completed"
-        )
+        if (transaction.status == TransactionStatus.FAILED)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not refund failed transaction")
 
-        if (transaction.status != TransactionStatus.SUCCESS) throw ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Transaction is not successful"
-        )
+        val totalRefundedSoFar = refundRepository.sumApprovedRefundsForPaymentIntent(paymentIntent.id)
+        val remainingRefundable = paymentIntent.amount - totalRefundedSoFar
+
+        if (body.amount > remainingRefundable)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Refund amount exceeds remaining refundable balance")
 
         val newRefund = refundRepository.save(
             Refund(
@@ -66,14 +63,14 @@ class TransactionServiceV1Impl(
                 status = RefundStatus.PENDING,
                 reason = body.reason,
                 amount = body.amount,
-                currency = transaction.currency
+                currency = transaction.currency,
             )
         )
 
         return newRefund
             .toRefundResponseDto()
             .also {
-                log.info { "Created refund: ${it.id}" }
+                log.info { "Created a new refund: ${it.id}" }
             }
     }
 

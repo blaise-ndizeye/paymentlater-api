@@ -5,67 +5,87 @@
     <title>Your New API Key – PaymentLater</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
-            background-color: #f5f7fa;
-            padding: 30px;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
         }
-        .container {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 24px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .main-table {
             max-width: 600px;
-            margin: 0 auto;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: #ffffff;
+            margin: auto;
+            border-radius: 8px;
+            overflow: hidden;
         }
+
         .header {
+            background-color: #5e5301;
+            padding: 20px;
             text-align: center;
-            margin-bottom: 24px;
+            color: white;
         }
-        .api-key {
-            background-color: #f0f0f0;
-            padding: 12px;
-            border-radius: 4px;
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .section {
+            padding: 20px;
+        }
+
+        .section table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section table td.bold {
             font-weight: bold;
-            font-size: 1.1em;
-            word-break: break-word;
-            text-align: center;
         }
+
         .footer {
-            margin-top: 24px;
-            font-size: 0.9em;
-            color: #666;
+            background-color: #f4f4f4;
+            padding: 15px;
             text-align: center;
-        }
-        .brand {
-            color: #3b82f6;
-            font-weight: bold;
+            font-size: 12px;
+            color: #777;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h2>API Key Regenerated – <span class="brand">PaymentLater</span></h2>
-    </div>
 
-    <p>
-        Hello <span th:text="${name}">Merchant</span>,
-    </p>
+<table class="main-table">
+    <tr>
+        <td class="header">
+            <h1>API Key Regenerated</h1>
+        </td>
+    </tr>
 
-    <p>
-        Your new API key has been successfully regenerated. Please find your new key below:
-    </p>
+    <tr>
+        <td class="section">
+            <p>Hello <strong th:text="${name}">Merchant</strong>,</p>
+            <p>Your new API key has been successfully regenerated. Please find your new key below:</p>
 
-    <div class="api-key" th:text="${apiKey}">your-new-api-key</div>
+            <div style="background-color: #f0f0f0; padding: 12px; border-radius: 4px; font-weight: bold; font-size: 1.1em; word-break: break-word; text-align: center;"
+                 th:text="${apiKey}">your-new-api-key</div>
 
-    <p style="margin-top: 20px;">
-        Keep it safe and do not share it publicly. If you didn't request a new API key, please contact our support team immediately.
-    </p>
+            <p style="margin-top: 20px;">
+                Keep it safe and do not share it publicly.
+                If you didn't request a new API key, please contact our support team immediately.
+            </p>
+        </td>
+    </tr>
 
-    <div class="footer">
-        PaymentLater © 2025. All rights reserved.
-    </div>
-</div>
+    <tr>
+        <td class="footer">
+            PaymentLater © 2025. All rights reserved.
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>
