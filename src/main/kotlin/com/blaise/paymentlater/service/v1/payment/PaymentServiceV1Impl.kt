@@ -35,6 +35,10 @@ class PaymentServiceV1Impl(
     private val eventPublisher: ApplicationEventPublisher,
 ) : PaymentServiceV1 {
 
+    override fun save(paymentIntent: PaymentIntent): PaymentIntent {
+        return paymentIntentRepository.save(paymentIntent)
+    }
+
     override fun getPayments(
         filter: PaymentIntentFilterDto,
         page: Int,
@@ -158,8 +162,6 @@ class PaymentServiceV1Impl(
                 amount = updated.amount,
                 currency = updated.currency,
                 status = TransactionStatus.valueOf(body.status),
-                confirmedBy = merchant.id,
-                confirmedByRole = UserRole.MERCHANT,
                 metadata = body.metadata
             )
         )

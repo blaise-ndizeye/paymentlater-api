@@ -9,6 +9,8 @@ import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import java.time.Instant
 
 interface PaymentServiceV1 {
+    fun save(paymentIntent: PaymentIntent): PaymentIntent
+
     fun getPayments(
         filter: PaymentIntentFilterDto,
         page: Int,

@@ -1,17 +1,8 @@
 package com.blaise.paymentlater.util
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.PaymentMethod
-import com.blaise.paymentlater.domain.enums.PaymentStatus
-import com.blaise.paymentlater.domain.enums.RefundStatus
-import com.blaise.paymentlater.domain.enums.TransactionStatus
-import com.blaise.paymentlater.domain.enums.UserRole
+import com.blaise.paymentlater.domain.enums.*
 import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
-import com.blaise.paymentlater.domain.model.Admin
-import com.blaise.paymentlater.domain.model.Merchant
-import com.blaise.paymentlater.domain.model.PaymentIntent
-import com.blaise.paymentlater.domain.model.Refund
-import com.blaise.paymentlater.domain.model.Transaction
+import com.blaise.paymentlater.domain.model.*
 import com.blaise.paymentlater.dto.request.*
 import org.bson.types.ObjectId
 import java.math.BigDecimal
@@ -129,8 +120,6 @@ object TestFactory {
         amount = BigDecimal.valueOf(100.0),
         currency = Currency.RWF,
         status = TransactionStatus.SUCCESS,
-        confirmedBy = ObjectId(merchant().id.toHexString()),
-        confirmedByRole = UserRole.MERCHANT,
         metadata = transactionMetadataRequestDto()
     )
 
@@ -141,8 +130,6 @@ object TestFactory {
         amount = BigDecimal.valueOf(99.9),
         currency = Currency.USD,
         status = TransactionStatus.FAILED,
-        confirmedBy = ObjectId(merchant().id.toHexString()),
-        confirmedByRole = UserRole.MERCHANT,
         metadata = transactionMetadataRequestDto()
     )
 
