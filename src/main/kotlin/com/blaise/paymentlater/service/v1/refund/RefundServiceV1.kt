@@ -9,5 +9,7 @@ interface RefundServiceV1 {
 
     fun rejectRefund(refundId: String, body: RejectRefundRequestDto): RefundTransactionResponseDto
 
+    fun getRefund(refundId: String, user: Any): RefundTransactionResponseDto
+
     fun findById(refundId: String): Refund
 }

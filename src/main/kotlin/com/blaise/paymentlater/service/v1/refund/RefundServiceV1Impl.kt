@@ -4,6 +4,7 @@ import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.enums.RefundStatus
 import com.blaise.paymentlater.domain.enums.TransactionStatus
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
+import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.Refund
 import com.blaise.paymentlater.dto.request.RejectRefundRequestDto
 import com.blaise.paymentlater.dto.response.RefundTransactionResponseDto
@@ -133,6 +134,18 @@ class RefundServiceV1Impl(
             .also {
                 log.info { "Rejected refund with id $refundId" }
             }
+    }
+
+    override fun getRefund(refundId: String, user: Any): RefundTransactionResponseDto {
+        val refund = findById(refundId)
+        val (_, paymentIntent) = transactionService.getTransactionAndAssociatedPaymentIntent(
+            refund.transactionId.toHexString()
+        )
+
+        if (user is Merchant && user.id != paymentIntent.merchantId)
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+
+        return refund.toRefundResponseDto()
     }
 
     override fun findById(refundId: String): Refund = refundRepository.findById(ObjectId(refundId))
