@@ -5,7 +5,7 @@ import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.domain.model.Refund
 import com.blaise.paymentlater.domain.model.Transaction
 
-data class RefundApprovedEventDto(
+data class RefundUpdateEventDto(
     val refund: Refund,
     val paymentIntent: PaymentIntent,
     val transaction: Transaction,

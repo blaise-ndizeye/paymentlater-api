@@ -158,4 +158,8 @@ object TestFactory {
         amount = BigDecimal.valueOf(10.0),
         reason = "reason1",
     )
+
+    fun rejectRefundRequestDto() = RejectRefundRequestDto(
+        reason = "reason1"
+    )
 }

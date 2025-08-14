@@ -5,8 +5,9 @@ import com.blaise.paymentlater.domain.enums.RefundStatus
 import com.blaise.paymentlater.domain.enums.TransactionStatus
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
 import com.blaise.paymentlater.domain.model.Refund
+import com.blaise.paymentlater.dto.request.RejectRefundRequestDto
 import com.blaise.paymentlater.dto.response.RefundTransactionResponseDto
-import com.blaise.paymentlater.dto.shared.RefundApprovedEventDto
+import com.blaise.paymentlater.dto.shared.RefundUpdateEventDto
 import com.blaise.paymentlater.repository.RefundRepository
 import com.blaise.paymentlater.service.v1.admin.AdminAuthServiceV1
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
@@ -80,7 +81,7 @@ class RefundServiceV1Impl(
         )
 
         eventPublisher.publishEvent(
-            RefundApprovedEventDto(
+            RefundUpdateEventDto(
                 updatedRefund,
                 updatedPaymentIntent,
                 updatedTransaction,
@@ -92,6 +93,45 @@ class RefundServiceV1Impl(
             .toRefundResponseDto()
             .also {
                 log.info { "Approved refund with id $refundId" }
+            }
+    }
+
+    override fun rejectRefund(refundId: String,body: RejectRefundRequestDto): RefundTransactionResponseDto {
+        val refund = findById(refundId)
+
+        if (refund.status != RefundStatus.PENDING) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Refund is not pending")
+        }
+
+        val (transaction, paymentIntent) = transactionService.getTransactionAndAssociatedPaymentIntent(
+            refund.transactionId.toHexString()
+        )
+
+        val admin = adminAuthService.getAuthenticatedAdmin()
+        val associatedMerchant = merchantAuthService.findById(paymentIntent.merchantId)
+
+        val updatedRefund = refundRepository.save(
+            refund.copy(
+                rejectedReason = body.reason,
+                status = RefundStatus.REJECTED,
+                rejectedBy = admin.id.toHexString(),
+                rejectedAt = Instant.now()
+            )
+        )
+
+        eventPublisher.publishEvent(
+            RefundUpdateEventDto(
+                updatedRefund,
+                paymentIntent,
+                transaction,
+                associatedMerchant
+            )
+        )
+
+        return updatedRefund
+            .toRefundResponseDto()
+            .also {
+                log.info { "Rejected refund with id $refundId" }
             }
     }
 

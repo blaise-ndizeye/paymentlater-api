@@ -9,6 +9,7 @@ fun Refund.toRefundResponseDto(): RefundTransactionResponseDto = RefundTransacti
     amount = amount,
     currency = currency,
     reason = reason,
+    rejectedReason = rejectedReason,
     status = status,
     requestedAt = requestedAt.toString(),
     approvedAt = approvedAt?.toString(),

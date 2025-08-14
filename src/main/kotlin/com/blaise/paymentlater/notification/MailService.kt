@@ -113,28 +113,29 @@ class MailService(
     )
     fun sendRefundApprovedEmail(to: String, name: String, amount: BigDecimal, currency: Currency, reason: String) {
         val htmlTemplate = "mail/refund/refund-approved.html"
-        val context = Context().apply {
-            setVariable("name", name)
-            setVariable("amount", amount)
-            setVariable("currency", currency)
-            setVariable("reason", reason)
-        }
-        val content = templateEngine.process(htmlTemplate, context)
-        val message = javaMailSender.createMimeMessage()
+        return sendRefundEmail(to, name, amount, currency, reason, htmlTemplate)
+    }
 
-        try {
-            val helper = MimeMessageHelper(message, true)
-            helper.setTo(to)
-            helper.setSubject("Refund approved – PaymentLater")
-            helper.setText(content, true)
-            javaMailSender.send(message)
-        } catch (e: MessagingException) {
-            log.error("REFUND: Email message build failed for $to")
-            throw EmailSendingException("Email message build failed for $to", e)
-        } catch (e: MailException) {
-            log.error("REFUND: Email sending failed to $to")
-            throw EmailSendingException("Could not send the email", e)
-        }
+    @Retryable(
+        value = [
+            EmailSendingException::class,
+            MongoTimeoutException::class,
+            MongoSocketReadTimeoutException::class,
+            SocketTimeoutException::class
+        ],
+        maxAttempts = 3,
+        backoff = Backoff(delay = 2000, multiplier = 2.0, maxDelay = 10000)
+    )
+    fun sendRefundRejectedEmail(
+        to: String,
+        name: String,
+        amount: BigDecimal,
+        currency: Currency,
+        reason: String,
+        rejectedReason: String
+    ) {
+        val htmlTemplate = "mail/refund/refund-rejected.html"
+        return sendRefundEmail(to, name, amount, currency, reason, htmlTemplate, rejectedReason)
     }
 
     private fun sendApiKeyEmail(to: String, name: String, apiKey: String, htmlTemplate: String) {
@@ -158,6 +159,42 @@ class MailService(
             throw EmailSendingException("Email message build failed for $to", e)
         } catch (e: MailException) {
             log.error("API-KEY: Email sending failed to $to")
+            throw EmailSendingException("Could not send the email", e)
+        }
+    }
+
+    private fun sendRefundEmail(
+        to: String,
+        name: String,
+        amount: BigDecimal,
+        currency: Currency,
+        reason: String,
+        htmlTemplate: String,
+        rejectedReason: String? = null,
+    ) {
+        val context = Context().apply {
+            setVariable("name", name)
+            setVariable("amount", amount)
+            setVariable("currency", currency)
+            setVariable("reason", reason)
+            if (rejectedReason != null) {
+                setVariable("rejectedReason", rejectedReason)
+            }
+        }
+        val content = templateEngine.process(htmlTemplate, context)
+        val message = javaMailSender.createMimeMessage()
+
+        try {
+            val helper = MimeMessageHelper(message, true)
+            helper.setTo(to)
+            helper.setSubject("Refund requested – PaymentLater")
+            helper.setText(content, true)
+            javaMailSender.send(message)
+        } catch (e: MessagingException) {
+            log.error("REFUND: Email message build failed for $to")
+            throw EmailSendingException("Email message build failed for $to", e)
+        } catch (e: MailException) {
+            log.error("REFUND: Email sending failed to $to")
             throw EmailSendingException("Could not send the email", e)
         }
     }

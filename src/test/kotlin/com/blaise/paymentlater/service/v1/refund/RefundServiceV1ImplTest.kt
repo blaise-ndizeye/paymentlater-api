@@ -8,6 +8,7 @@ import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
 import com.blaise.paymentlater.service.v1.payment.PaymentServiceV1
 import com.blaise.paymentlater.service.v1.transaction.TransactionServiceV1
 import com.blaise.paymentlater.util.TestFactory
+import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.clearMocks
 import io.mockk.every
@@ -135,6 +136,54 @@ class RefundServiceV1ImplTest {
             verify(exactly = 1) { adminAuthService.getAuthenticatedAdmin() }
             verify(exactly = 1) { merchantAuthService.findById(any()) }
             verify(exactly = 1) { refundRepository.sumApprovedRefundsForPaymentIntent(paymentIntent.id) }
+        }
+    }
+
+    @Nested
+    @DisplayName("REJECT REFUND")
+    inner class RejectRefund {
+
+        @Test
+        fun `should reject refund`() {
+            val refundId = "refundId"
+            val body = TestFactory.rejectRefundRequestDto()
+            val refundServiceSpy = spyk(refundService)
+
+            every { refundServiceSpy.findById(refundId) } returns TestFactory.refund1()
+            every {
+                transactionService.getTransactionAndAssociatedPaymentIntent(any())
+            } returns Pair(TestFactory.transaction1(), TestFactory.paymentIntent1())
+            every { adminAuthService.getAuthenticatedAdmin() } returns TestFactory.admin()
+            every { merchantAuthService.findById(any()) } returns TestFactory.merchant()
+            every { refundRepository.save(any()) } returns TestFactory.refund1()
+            every { eventPublisher.publishEvent(any()) } just Runs
+
+            val result = refundServiceSpy.rejectRefund(refundId, body)
+
+            assertEquals(TestFactory.refund1().toRefundResponseDto(), result)
+            verify(exactly = 1) { refundServiceSpy.findById(refundId) }
+            verify(exactly = 1) { transactionService.getTransactionAndAssociatedPaymentIntent(any()) }
+            verify(exactly = 1) { adminAuthService.getAuthenticatedAdmin() }
+            verify(exactly = 1) { merchantAuthService.findById(any()) }
+            verify(exactly = 1) { refundRepository.save(any()) }
+        }
+
+        @Test
+        fun `should throw exception if refund is not pending`() {
+            val refundId = "refundId"
+            val body = TestFactory.rejectRefundRequestDto()
+            val refundServiceSpy = spyk(refundService)
+
+            every {
+                refundServiceSpy.findById(refundId)
+            } returns TestFactory.refund1().copy(status = RefundStatus.APPROVED)
+
+            assertThrows<ResponseStatusException> {
+                refundServiceSpy.rejectRefund(refundId, body)
+            }
+
+            verify(exactly = 1) { refundServiceSpy.findById(refundId) }
+            verify { transactionService.getTransactionAndAssociatedPaymentIntent(any()) wasNot Called }
         }
     }
 }

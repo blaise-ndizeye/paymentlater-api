@@ -1,5 +1,6 @@
 package com.blaise.paymentlater.service.v1.payment
 
+import com.blaise.paymentlater.domain.enums.WebhookEventType
 import com.blaise.paymentlater.dto.shared.PaymentIntentConfirmedEventDto
 import com.blaise.paymentlater.notification.MailService
 import org.springframework.context.event.EventListener
@@ -41,6 +42,7 @@ class PaymentEventListener(
     )
     fun sendConfirmPaymentIntentWebhook(event: PaymentIntentConfirmedEventDto) {
         val payload = mapOf(
+            "eventType" to WebhookEventType.PAYMENT_INTENT_CONFIRMED.name,
             "paymentIntentId" to event.paymentIntent.id.toHexString(),
             "status" to event.paymentIntent.status.name,
             "transactionId" to event.transaction.id.toHexString(),
