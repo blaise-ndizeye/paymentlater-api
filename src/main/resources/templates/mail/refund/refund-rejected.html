@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Refund Declined</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .main-table {
+            max-width: 600px;
+            background: #ffffff;
+            margin: auto;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #b91c1c; /* red tone for decline */
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .section {
+            padding: 20px;
+        }
+
+        .section table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section table td.bold {
+            font-weight: bold;
+        }
+
+        .footer {
+            background-color: #f4f4f4;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<table class="main-table">
+    <tr>
+        <td class="header">
+            <h1>Refund Declined</h1>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="section">
+            <p>Hello, <strong th:text="${name}">Customer</strong>,</p>
+            <p>We’re sorry to inform you that your refund request could not be approved. Here are the details:</p>
+
+            <table>
+                <tr>
+                    <td>Amount</td>
+                    <td class="bold" th:text="${amount} + ' ' + ${currency}">50 USD</td>
+                </tr>
+                <tr>
+                    <td>Your Refund Reason</td>
+                    <td th:text="${reason}">Refund request does not meet the criteria</td>
+                </tr>
+                <tr>
+                    <td>Rejection Reason</td>
+                    <td th:text="${rejectedReason}">Reason for rejection</td>
+                </tr>
+            </table>
+
+            <p style="margin-top: 20px;">If you have any questions, please contact our support team.</p>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="footer">
+            PaymentLater © 2025. All rights reserved.
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

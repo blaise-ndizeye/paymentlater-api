@@ -21,7 +21,7 @@ class JwtConfig(
 
     private val headerName = "Authorization"
     private val secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtSecret))
-    private val accessTokenValidityMillis = 15L * 60L * 1000L // 15 minutes
+    private val accessTokenValidityMillis = 15L * 60L * 60L * 1000L // 15 hours
     val refreshTokenValidityMillis = 30L * 24L * 60L * 60L * 1000L // 30 days
 
     private fun generateToken(username: String, tokenType: TokenType, validity: Long): String {

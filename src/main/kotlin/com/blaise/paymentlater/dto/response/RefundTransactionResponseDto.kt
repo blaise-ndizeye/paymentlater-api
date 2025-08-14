@@ -15,6 +15,8 @@ data class RefundTransactionResponseDto(
 
     val reason: String,
 
+    val rejectedReason: String? = null,
+
     val status: RefundStatus,
 
     val requestedAt: String,

@@ -19,6 +19,8 @@ data class Refund(
 
     val reason: String,
 
+    val rejectedReason: String? = null,
+
     val amount: BigDecimal,
 
     val currency: Currency,

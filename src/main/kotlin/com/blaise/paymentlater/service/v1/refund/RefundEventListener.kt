@@ -1,7 +1,8 @@
 package com.blaise.paymentlater.service.v1.refund
 
+import com.blaise.paymentlater.domain.enums.RefundStatus
 import com.blaise.paymentlater.domain.enums.WebhookEventType
-import com.blaise.paymentlater.dto.shared.RefundApprovedEventDto
+import com.blaise.paymentlater.dto.shared.RefundUpdateEventDto
 import com.blaise.paymentlater.notification.MailService
 import org.springframework.context.event.EventListener
 import org.springframework.retry.annotation.Backoff
@@ -21,16 +22,28 @@ class RefundEventListener(
 
     @Async("taskExecutor")
     @EventListener
-    fun sendRefundApprovedEvent(event: RefundApprovedEventDto) {
-        sendRefundApprovedEventWebhook(event)
+    fun sendRefundUpdateEvent(event: RefundUpdateEventDto) {
+        if (event.refund.status == RefundStatus.APPROVED) {
+            sendRefundApprovedEventWebhook(WebhookEventType.REFUND_APPROVED, event)
+            mailService.sendRefundApprovedEmail(
+                to = event.merchant.email,
+                name = event.merchant.name,
+                amount = event.refund.amount,
+                currency = event.refund.currency,
+                reason = event.refund.reason
+            )
+        } else if (event.refund.status == RefundStatus.REJECTED) {
+            sendRefundApprovedEventWebhook(WebhookEventType.REFUND_REJECTED, event)
+            mailService.sendRefundRejectedEmail(
+                to = event.merchant.email,
+                name = event.merchant.name,
+                amount = event.refund.amount,
+                currency = event.refund.currency,
+                reason = event.refund.reason,
+                rejectedReason = event.refund.rejectedReason!!
+            )
+        }
 
-        mailService.sendRefundApprovedEmail(
-            to = event.merchant.email,
-            name = event.merchant.name,
-            amount = event.refund.amount,
-            currency = event.refund.currency,
-            reason = event.refund.reason
-        )
     }
 
     @Retryable(
@@ -38,9 +51,9 @@ class RefundEventListener(
         maxAttempts = 3,
         backoff = Backoff(delay = 2000, multiplier = 2.0)
     )
-    fun sendRefundApprovedEventWebhook(event: RefundApprovedEventDto) {
+    fun sendRefundApprovedEventWebhook(eventType: WebhookEventType, event: RefundUpdateEventDto) {
         val payload = mapOf(
-            "eventType" to WebhookEventType.REFUND_APPROVED.name,
+            "eventType" to eventType.name,
             "paymentIntentId" to event.paymentIntent.id.toHexString(),
             "transactionId" to event.transaction.id.toHexString(),
             "refundId" to event.refund.id.toHexString(),
