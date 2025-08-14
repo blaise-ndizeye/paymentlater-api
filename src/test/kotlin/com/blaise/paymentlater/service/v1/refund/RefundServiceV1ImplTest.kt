@@ -8,23 +8,14 @@ import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
 import com.blaise.paymentlater.service.v1.payment.PaymentServiceV1
 import com.blaise.paymentlater.service.v1.transaction.TransactionServiceV1
 import com.blaise.paymentlater.util.TestFactory
-import io.mockk.Called
-import io.mockk.Runs
-import io.mockk.clearMocks
-import io.mockk.every
+import io.mockk.*
 import io.mockk.junit5.MockKExtension
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
+import org.bson.types.ObjectId
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 
@@ -184,6 +175,63 @@ class RefundServiceV1ImplTest {
 
             verify(exactly = 1) { refundServiceSpy.findById(refundId) }
             verify { transactionService.getTransactionAndAssociatedPaymentIntent(any()) wasNot Called }
+        }
+    }
+
+    @Nested
+    @DisplayName("GET REFUND")
+    inner class GetRefund {
+
+        @Test
+        fun `should get refund`() {
+            val refundId = "refundId"
+            val refundServiceSpy = spyk(refundService)
+
+            every { refundServiceSpy.findById(refundId) } returns TestFactory.refund1()
+            every {
+                transactionService.getTransactionAndAssociatedPaymentIntent(any())
+            } returns Pair(TestFactory.transaction1(), TestFactory.paymentIntent1())
+
+            val result = refundServiceSpy.getRefund(refundId, TestFactory.merchant())
+
+            assertEquals(TestFactory.refund1().toRefundResponseDto(), result)
+            verify(exactly = 1) { refundServiceSpy.findById(refundId) }
+            verify(exactly = 1) { transactionService.getTransactionAndAssociatedPaymentIntent(any()) }
+        }
+
+        @Test
+        fun `should throw exception if refund does not exist`() {
+            val refundId = "refundId"
+            val refundServiceSpy = spyk(refundService)
+
+            every { refundServiceSpy.findById(refundId) } throws ResponseStatusException(HttpStatus.NOT_FOUND)
+
+            assertThrows<ResponseStatusException> {
+                refundServiceSpy.getRefund(refundId, TestFactory.merchant())
+            }
+
+            verify(exactly = 1) { refundServiceSpy.findById(refundId) }
+        }
+
+        @Test
+        fun `should throw exception if refund does not belong to merchant`() {
+            val refundId = "refundId"
+            val refundServiceSpy = spyk(refundService)
+
+            every { refundServiceSpy.findById(refundId) } returns TestFactory.refund1()
+            every {
+                transactionService.getTransactionAndAssociatedPaymentIntent(any())
+            } returns Pair(TestFactory.transaction1(), TestFactory.paymentIntent1())
+
+            assertThrows<ResponseStatusException> {
+                refundServiceSpy.getRefund(
+                    refundId,
+                    TestFactory.merchant().copy(id = ObjectId())
+                )
+            }
+
+            verify(exactly = 1) { refundServiceSpy.findById(refundId) }
+            verify(exactly = 1) { transactionService.getTransactionAndAssociatedPaymentIntent(any()) }
         }
     }
 }

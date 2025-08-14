@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -137,4 +139,53 @@ class RefundControllerV1(
 
         @Valid @RequestBody body: RejectRefundRequestDto
     ): RefundTransactionResponseDto = refundService.rejectRefund(refundId, body)
+
+    @GetMapping("/{refundId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
+    @SecurityRequirement(name = "BearerToken")
+    @SecurityRequirement(name = "ApiKey")
+    @Operation(
+        summary = "Get a refund by id",
+        security = [SecurityRequirement(name = "BearerToken"), SecurityRequirement(name = "ApiKey")],
+        description = "Get a refund by id",
+        responses = [
+            ApiResponse(
+                responseCode = "200", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = RefundTransactionResponseDto::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401", description = "Unauthorized", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+            ApiResponse(
+                responseCode = "403", description = "Forbidden", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404", description = "Refund not found", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = ApiErrorResponseDto::class)
+                    ),
+                ]
+            ),
+        ]
+    )
+    fun getRefund(
+        authentication: Authentication,
+        @Parameter(description = "Refund id")
+        @PathVariable refundId: String
+    ): RefundTransactionResponseDto = refundService.getRefund(refundId, authentication.principal)
 }
