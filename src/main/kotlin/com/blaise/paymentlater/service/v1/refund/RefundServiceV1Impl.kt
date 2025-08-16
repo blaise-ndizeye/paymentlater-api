@@ -3,11 +3,14 @@ package com.blaise.paymentlater.service.v1.refund
 import com.blaise.paymentlater.domain.enums.PaymentStatus
 import com.blaise.paymentlater.domain.enums.RefundStatus
 import com.blaise.paymentlater.domain.enums.TransactionStatus
+import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.Refund
 import com.blaise.paymentlater.dto.request.RejectRefundRequestDto
+import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.RefundTransactionResponseDto
+import com.blaise.paymentlater.dto.shared.RefundFilterDto
 import com.blaise.paymentlater.dto.shared.RefundUpdateEventDto
 import com.blaise.paymentlater.repository.RefundRepository
 import com.blaise.paymentlater.service.v1.admin.AdminAuthServiceV1
@@ -97,7 +100,7 @@ class RefundServiceV1Impl(
             }
     }
 
-    override fun rejectRefund(refundId: String,body: RejectRefundRequestDto): RefundTransactionResponseDto {
+    override fun rejectRefund(refundId: String, body: RejectRefundRequestDto): RefundTransactionResponseDto {
         val refund = findById(refundId)
 
         if (refund.status != RefundStatus.PENDING) {
@@ -146,6 +149,20 @@ class RefundServiceV1Impl(
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
         return refund.toRefundResponseDto()
+    }
+
+    override fun getRefunds(
+        filter: RefundFilterDto,
+        page: Int,
+        size: Int
+    ): PageResponseDto<RefundTransactionResponseDto> {
+        val refunds = refundRepository.search(filter, page, size)
+
+        return refunds.map { it.toRefundResponseDto() }
+            .toPageResponseDto()
+            .also {
+                log.info { "Found ${refunds.totalElements} refunds" }
+            }
     }
 
     override fun findById(refundId: String): Refund = refundRepository.findById(ObjectId(refundId))
