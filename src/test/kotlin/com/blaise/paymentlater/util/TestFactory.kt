@@ -4,6 +4,7 @@ import com.blaise.paymentlater.domain.enums.*
 import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.*
 import com.blaise.paymentlater.dto.request.*
+import com.blaise.paymentlater.dto.shared.RefundFilterDto
 import org.bson.types.ObjectId
 import java.math.BigDecimal
 import java.time.Instant
@@ -162,4 +163,6 @@ object TestFactory {
     fun rejectRefundRequestDto() = RejectRefundRequestDto(
         reason = "reason1"
     )
+
+    fun refundFilterDto() = RefundFilterDto(statuses = listOf(RefundStatus.APPROVED))
 }

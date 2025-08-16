@@ -15,6 +15,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.PageImpl
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
@@ -232,6 +233,31 @@ class RefundServiceV1ImplTest {
 
             verify(exactly = 1) { refundServiceSpy.findById(refundId) }
             verify(exactly = 1) { transactionService.getTransactionAndAssociatedPaymentIntent(any()) }
+        }
+    }
+
+    @Nested
+    @DisplayName("GET REFUNDS")
+    inner class GetRefunds {
+
+        @Test
+        fun `should get refunds`() {
+            val filter = TestFactory.refundFilterDto()
+            val page = 1
+            val size = 2
+
+            every { refundRepository.search(filter, page, size) } returns PageImpl(
+                listOf(
+                    TestFactory.refund1(),
+                    TestFactory.refund2()
+                )
+            )
+
+            val result = refundService.getRefunds(filter, page, size)
+
+            assertEquals(2, result.content.size)
+            assertEquals(2, result.totalElements)
+            verify(exactly = 1) { refundRepository.search(filter, page, size) }
         }
     }
 }

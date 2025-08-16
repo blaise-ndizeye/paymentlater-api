@@ -192,10 +192,10 @@ class PaymentControllerV1(
         @Parameter(description = "List of currencies", example = "RWF, USD, EUR")
         @RequestParam(required = false) currencies: List<String>?,
 
-        @Parameter(description = "Start date in ISO 8601 format", example = "2022-01-01T00:00:00.000Z")
+        @Parameter(description = "Start date in ISO 8601 format", example = "2025-01-01T00:00:00.000Z")
         @RequestParam(required = false) start: String?,
 
-        @Parameter(description = "End date in ISO 8601 format", example = "2022-01-01T00:00:00.000Z")
+        @Parameter(description = "End date in ISO 8601 format", example = "2025-01-01T00:00:00.000Z")
         @RequestParam(required = false) end: String?,
 
         @Parameter(description = "Page number", example = "1")
