@@ -52,7 +52,7 @@ class RefundEventListener(
         backoff = Backoff(delay = 2000, multiplier = 2.0)
     )
     fun sendRefundApprovedEventWebhook(eventType: WebhookEventType, event: RefundUpdateEventDto) {
-        val payload = mapOf(
+        val payload = mutableMapOf(
             "eventType" to eventType.name,
             "paymentIntentId" to event.paymentIntent.id.toHexString(),
             "transactionId" to event.transaction.id.toHexString(),
@@ -60,9 +60,17 @@ class RefundEventListener(
             "amount" to event.refund.amount,
             "currency" to event.refund.currency.name,
             "status" to event.refund.status.name,
-            "reason" to event.refund.reason,
-            "approvedAt" to event.refund.approvedAt.toString()
+            "reason" to event.refund.reason
         )
+
+        if (event.refund.status == RefundStatus.APPROVED) {
+            payload["approvedAt"] = event.refund.approvedAt.toString()
+        }
+
+        if (event.refund.status == RefundStatus.REJECTED && event.refund.rejectedReason != null) {
+            payload["rejectedReason"] = event.refund.rejectedReason
+            payload["rejectedAt"] = event.refund.rejectedAt.toString()
+        }
 
         webClient.post()
             .uri(event.merchant.webhookUrl!!)

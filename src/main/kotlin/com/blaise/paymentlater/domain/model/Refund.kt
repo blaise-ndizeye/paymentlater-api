@@ -15,7 +15,7 @@ import java.time.Instant
 @CompoundIndexes(
     CompoundIndex(
         name = "status_currency_requestedAt_approvedAt_rejectedAt_idx",
-        def = "{'status': 1, 'currency': 1, requestedAt': -1, 'approvedAt': -1, 'rejectedAt': -1}",
+        def = "{'status': 1, 'currency': 1, 'requestedAt': -1, 'approvedAt': -1, 'rejectedAt': -1}",
     )
 )
 data class Refund(
