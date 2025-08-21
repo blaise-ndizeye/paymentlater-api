@@ -72,7 +72,7 @@ class RefundExtensionRepositoryImpl(
         val pageable = PageRequest.of(
             page,
             size,
-            Sort.by(Sort.Direction.DESC, "createdAt")
+            Sort.by(Sort.Direction.DESC, "requestedAt")
         )
 
         val aggregationOps = mutableListOf<AggregationOperation>()

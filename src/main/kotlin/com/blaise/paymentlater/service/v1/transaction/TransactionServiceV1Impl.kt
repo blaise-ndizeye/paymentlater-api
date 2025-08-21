@@ -48,8 +48,8 @@ class TransactionServiceV1Impl(
         if (paymentIntent.status !in listOf(PaymentStatus.COMPLETED, PaymentStatus.PARTIALLY_REFUNDED))
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment intent is not eligible for refund")
 
-        if (transaction.status == TransactionStatus.FAILED)
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not refund failed transaction")
+        if (transaction.status in listOf(TransactionStatus.FAILED, TransactionStatus.REFUNDED))
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Transaction is not eligible for refund")
 
         val totalRefundedSoFar = refundRepository.sumApprovedRefundsForPaymentIntent(paymentIntent.id)
         val remainingRefundable = paymentIntent.amount - totalRefundedSoFar

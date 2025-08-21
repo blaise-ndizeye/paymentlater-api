@@ -7,6 +7,7 @@ import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.Refund
+import com.blaise.paymentlater.domain.model.Transaction
 import com.blaise.paymentlater.dto.request.RejectRefundRequestDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.RefundTransactionResponseDto
@@ -72,9 +73,17 @@ class RefundServiceV1Impl(
             paymentIntent.copy(status = newPaymentIntentStatus)
         )
 
-        val updatedTransaction = if (transaction.status == TransactionStatus.REFUNDED) transaction
-        else
-            transactionService.save(transaction.copy(status = TransactionStatus.REFUNDED))
+        val newTransaction = transactionService.save(
+            Transaction(
+                paymentIntentId = updatedPaymentIntent.id,
+                parentTransactionId = transaction.id,
+                amount = refund.amount,
+                currency = refund.currency,
+                status = TransactionStatus.REFUNDED,
+                paymentMethod = transaction.paymentMethod,
+                metadata = transaction.metadata.copy(refundReason = refund.reason),
+            )
+        )
 
         val updatedRefund = refundRepository.save(
             refund.copy(
@@ -88,7 +97,7 @@ class RefundServiceV1Impl(
             RefundUpdateEventDto(
                 updatedRefund,
                 updatedPaymentIntent,
-                updatedTransaction,
+                newTransaction,
                 associatedMerchant
             )
         )
