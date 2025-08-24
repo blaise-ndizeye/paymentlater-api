@@ -1,14 +1,19 @@
 package com.blaise.paymentlater.service.v1.transaction
 
-import com.blaise.paymentlater.domain.enums.PaymentStatus
-import com.blaise.paymentlater.domain.enums.RefundStatus
-import com.blaise.paymentlater.domain.enums.TransactionStatus
+import com.blaise.paymentlater.domain.enum.PaymentStatus
+import com.blaise.paymentlater.domain.enum.RefundStatus
+import com.blaise.paymentlater.domain.enum.TransactionStatus
+import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
+import com.blaise.paymentlater.domain.extension.toTransactionResponseDto
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.domain.model.Refund
 import com.blaise.paymentlater.domain.model.Transaction
 import com.blaise.paymentlater.dto.request.RefundTransactionRequestDto
+import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.RefundTransactionResponseDto
+import com.blaise.paymentlater.dto.response.TransactionResponseDto
+import com.blaise.paymentlater.dto.shared.TransactionFilterDto
 import com.blaise.paymentlater.repository.RefundRepository
 import com.blaise.paymentlater.repository.TransactionRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
@@ -82,5 +87,19 @@ class TransactionServiceV1Impl(
         val transaction = findById(ObjectId(transactionId))
         val paymentIntent = paymentService.findById(transaction.paymentIntentId.toHexString())
         return Pair(transaction, paymentIntent)
+    }
+
+    override fun getTransactions(
+        filter: TransactionFilterDto,
+        page: Int,
+        size: Int
+    ): PageResponseDto<TransactionResponseDto> {
+        val transactions = transactionRepository.search(filter, page, size)
+
+        return transactions.map { it.toTransactionResponseDto() }
+            .toPageResponseDto()
+            .also {
+                log.info { "Found ${transactions.totalElements} transactions" }
+            }
     }
 }

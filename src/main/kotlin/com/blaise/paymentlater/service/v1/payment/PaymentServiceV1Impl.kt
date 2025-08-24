@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.service.v1.payment
 
-import com.blaise.paymentlater.domain.enums.*
+import com.blaise.paymentlater.domain.enum.*
 import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toPaymentIntentResponseDto
 import com.blaise.paymentlater.domain.model.Admin

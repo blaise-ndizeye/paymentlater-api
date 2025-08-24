@@ -1,7 +1,7 @@
 package com.blaise.paymentlater.domain.model
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.domain.enum.Currency
+import com.blaise.paymentlater.domain.enum.PaymentStatus
 import com.blaise.paymentlater.dto.request.BillableItemRequestDto
 import com.blaise.paymentlater.dto.request.PaymentMetadataRequestDto
 import org.bson.types.ObjectId

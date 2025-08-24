@@ -1,7 +1,7 @@
 package com.blaise.paymentlater.service.v1.admin
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.domain.enum.Currency
+import com.blaise.paymentlater.domain.enum.PaymentStatus
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.PaymentIntentRepository
 import com.blaise.paymentlater.util.TestFactory
@@ -15,8 +15,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals

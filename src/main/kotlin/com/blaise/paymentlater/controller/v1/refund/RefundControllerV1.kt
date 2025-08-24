@@ -1,7 +1,7 @@
 package com.blaise.paymentlater.controller.v1.refund
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.RefundStatus
+import com.blaise.paymentlater.domain.enum.Currency
+import com.blaise.paymentlater.domain.enum.RefundStatus
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.RejectRefundRequestDto
 import com.blaise.paymentlater.dto.response.ApiErrorResponseDto

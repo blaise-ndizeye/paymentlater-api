@@ -1,8 +1,8 @@
 package com.blaise.paymentlater.controller.v1.payment
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.PaymentStatus
-import com.blaise.paymentlater.domain.enums.TransactionStatus
+import com.blaise.paymentlater.domain.enum.Currency
+import com.blaise.paymentlater.domain.enum.PaymentStatus
+import com.blaise.paymentlater.domain.enum.TransactionStatus
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.ConfirmPaymentIntentRequestDto
 import com.blaise.paymentlater.dto.request.PaymentIntentRequestDto

@@ -1,10 +1,11 @@
 package com.blaise.paymentlater.util
 
-import com.blaise.paymentlater.domain.enums.*
+import com.blaise.paymentlater.domain.enum.*
 import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.*
 import com.blaise.paymentlater.dto.request.*
 import com.blaise.paymentlater.dto.shared.RefundFilterDto
+import com.blaise.paymentlater.dto.shared.TransactionFilterDto
 import org.bson.types.ObjectId
 import java.math.BigDecimal
 import java.time.Instant
@@ -165,4 +166,6 @@ object TestFactory {
     )
 
     fun refundFilterDto() = RefundFilterDto(statuses = listOf(RefundStatus.APPROVED))
+
+    fun transactionFilterDto() = TransactionFilterDto(statuses = listOf(TransactionStatus.SUCCESS))
 }

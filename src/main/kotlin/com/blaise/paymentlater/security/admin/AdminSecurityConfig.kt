@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.security.admin
 
-import com.blaise.paymentlater.domain.enums.UserRole
+import com.blaise.paymentlater.domain.enum.UserRole
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order

@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.service.v1.refund
 
-import com.blaise.paymentlater.domain.enums.RefundStatus
+import com.blaise.paymentlater.domain.enum.RefundStatus
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
 import com.blaise.paymentlater.repository.RefundRepository
 import com.blaise.paymentlater.service.v1.admin.AdminAuthServiceV1

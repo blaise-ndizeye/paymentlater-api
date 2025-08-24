@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.domain.model
 
-import com.blaise.paymentlater.domain.enums.UserRole
+import com.blaise.paymentlater.domain.enum.UserRole
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed

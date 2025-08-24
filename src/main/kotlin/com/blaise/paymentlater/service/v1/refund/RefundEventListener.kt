@@ -1,7 +1,7 @@
 package com.blaise.paymentlater.service.v1.refund
 
-import com.blaise.paymentlater.domain.enums.RefundStatus
-import com.blaise.paymentlater.domain.enums.WebhookEventType
+import com.blaise.paymentlater.domain.enum.RefundStatus
+import com.blaise.paymentlater.domain.enum.WebhookEventType
 import com.blaise.paymentlater.dto.shared.RefundUpdateEventDto
 import com.blaise.paymentlater.notification.MailService
 import org.springframework.context.event.EventListener

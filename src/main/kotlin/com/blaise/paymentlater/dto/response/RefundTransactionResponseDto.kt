@@ -1,7 +1,7 @@
 package com.blaise.paymentlater.dto.response
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.RefundStatus
+import com.blaise.paymentlater.domain.enum.Currency
+import com.blaise.paymentlater.domain.enum.RefundStatus
 import java.math.BigDecimal
 
 data class RefundTransactionResponseDto(

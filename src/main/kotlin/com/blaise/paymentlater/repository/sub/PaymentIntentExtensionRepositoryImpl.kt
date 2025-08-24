@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.repository.sub
 
-import com.blaise.paymentlater.domain.enums.PaymentStatus
+import com.blaise.paymentlater.domain.enum.PaymentStatus
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.dto.shared.PaymentIntentFilterDto
 import com.blaise.paymentlater.repository.util.buildMongoCriteria

@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.repository.sub
 
-import com.blaise.paymentlater.domain.enums.RefundStatus
+import com.blaise.paymentlater.domain.enum.RefundStatus
 import com.blaise.paymentlater.domain.model.Refund
 import com.blaise.paymentlater.dto.shared.RefundFilterDto
 import com.blaise.paymentlater.repository.util.buildMongoCriteria

@@ -1,8 +1,8 @@
 package com.blaise.paymentlater.domain.model
 
-import com.blaise.paymentlater.domain.enums.Currency
-import com.blaise.paymentlater.domain.enums.PaymentMethod
-import com.blaise.paymentlater.domain.enums.TransactionStatus
+import com.blaise.paymentlater.domain.enum.Currency
+import com.blaise.paymentlater.domain.enum.PaymentMethod
+import com.blaise.paymentlater.domain.enum.TransactionStatus
 import com.blaise.paymentlater.dto.request.TransactionMetadataRequestDto
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id

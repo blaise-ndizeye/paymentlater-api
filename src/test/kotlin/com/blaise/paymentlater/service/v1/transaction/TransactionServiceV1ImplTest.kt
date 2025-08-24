@@ -1,7 +1,7 @@
 package com.blaise.paymentlater.service.v1.transaction
 
-import com.blaise.paymentlater.domain.enums.PaymentStatus
-import com.blaise.paymentlater.domain.enums.TransactionStatus
+import com.blaise.paymentlater.domain.enum.PaymentStatus
+import com.blaise.paymentlater.domain.enum.TransactionStatus
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
 import com.blaise.paymentlater.repository.RefundRepository
 import com.blaise.paymentlater.repository.TransactionRepository
@@ -14,6 +14,7 @@ import org.bson.types.ObjectId
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.domain.PageImpl
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 
@@ -154,6 +155,31 @@ class TransactionServiceV1ImplTest {
 
             verify { transactionServiceSpy.getTransactionAndAssociatedPaymentIntent(transactionId) wasNot Called }
             verify { refundRepository.save(any()) wasNot Called }
+        }
+    }
+
+    @Nested
+    @DisplayName("GET TRANSACTIONS")
+    inner class GetTransactions {
+
+        @Test
+        fun `should get transactions`() {
+            val filter = TestFactory.transactionFilterDto()
+            val page = 1
+            val size = 2
+
+            every { transactionRepository.search(filter, page, size) } returns PageImpl(
+                listOf(
+                    TestFactory.transaction1(),
+                    TestFactory.transaction2()
+                )
+            )
+
+            val result = transactionService.getTransactions(filter, page, size)
+
+            assertEquals(2, result.content.size)
+            assertEquals(2, result.totalElements)
+            verify(exactly = 1) { transactionRepository.search(filter, page, size) }
         }
     }
 }

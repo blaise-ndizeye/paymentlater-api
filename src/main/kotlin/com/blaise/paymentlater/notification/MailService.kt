@@ -1,6 +1,6 @@
 package com.blaise.paymentlater.notification
 
-import com.blaise.paymentlater.domain.enums.Currency
+import com.blaise.paymentlater.domain.enum.Currency
 import com.blaise.paymentlater.domain.exception.EmailSendingException
 import com.mongodb.MongoSocketReadTimeoutException
 import com.mongodb.MongoTimeoutException
