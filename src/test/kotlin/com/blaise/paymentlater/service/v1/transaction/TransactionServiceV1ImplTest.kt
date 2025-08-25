@@ -3,6 +3,7 @@ package com.blaise.paymentlater.service.v1.transaction
 import com.blaise.paymentlater.domain.enum.PaymentStatus
 import com.blaise.paymentlater.domain.enum.TransactionStatus
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
+import com.blaise.paymentlater.domain.extension.toTransactionResponseDto
 import com.blaise.paymentlater.repository.RefundRepository
 import com.blaise.paymentlater.repository.TransactionRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
+import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.math.BigDecimal
 
@@ -180,6 +182,62 @@ class TransactionServiceV1ImplTest {
             assertEquals(2, result.content.size)
             assertEquals(2, result.totalElements)
             verify(exactly = 1) { transactionRepository.search(filter, page, size) }
+        }
+    }
+
+    @Nested
+    @DisplayName("GET TRANSACTION")
+    inner class GetTransaction {
+
+        @Test
+        fun `should get transaction`() {
+            val transactionId = "trans123"
+            val transaction = TestFactory.transaction1()
+            val paymentIntent = TestFactory.paymentIntent1()
+            val transactionServiceSpy = spyk(transactionService)
+
+            every { transactionServiceSpy.getTransactionAndAssociatedPaymentIntent(transactionId) } returns Pair(
+                transaction,
+                paymentIntent
+            )
+
+            val result = transactionServiceSpy.getTransaction(transactionId, TestFactory.merchant())
+
+            assertEquals(transaction.toTransactionResponseDto(), result)
+            verify(exactly = 1) { transactionServiceSpy.getTransactionAndAssociatedPaymentIntent(transactionId) }
+        }
+
+        @Test
+        fun `should throw if transaction is not found`() {
+            val transactionId = ObjectId().toHexString()
+            val transactionServiceSpy = spyk(transactionService)
+
+            every {
+                transactionServiceSpy.findById(any())
+            } throws ResponseStatusException(HttpStatus.NOT_FOUND)
+
+            assertThrows<ResponseStatusException> {
+                transactionServiceSpy.getTransaction(transactionId, TestFactory.merchant())
+            }
+        }
+
+        @Test
+        fun `should throw exception if user is merchant and his id is not associated to the transaction`() {
+            val transactionId = "trans123"
+            val transaction = TestFactory.transaction1()
+            val paymentIntent = TestFactory.paymentIntent1().copy(merchantId = ObjectId())
+            val transactionServiceSpy = spyk(transactionService)
+
+            every { transactionServiceSpy.getTransactionAndAssociatedPaymentIntent(transactionId) } returns Pair(
+                transaction,
+                paymentIntent
+            )
+
+            assertThrows<ResponseStatusException> {
+                transactionServiceSpy.getTransaction(transactionId, TestFactory.merchant())
+            }
+
+            verify(exactly = 1) { transactionServiceSpy.getTransactionAndAssociatedPaymentIntent(transactionId) }
         }
     }
 }

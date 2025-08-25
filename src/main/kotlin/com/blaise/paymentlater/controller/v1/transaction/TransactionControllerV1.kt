@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
@@ -145,6 +146,55 @@ class TransactionControllerV1(
 
         return transactionService.getTransactions(filter, page, size)
     }
+
+    @GetMapping("/{transactionId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
+    @SecurityRequirement(name = "ApiKey")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Get a transaction by id",
+        security = [SecurityRequirement(name = "ApiKey"), SecurityRequirement(name = "BearerToken")],
+        description = "Get a transaction by id",
+        responses = [
+            ApiResponse(
+                responseCode = "200", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = TransactionPageResponseDto::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401", description = "Unauthorized", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+            ApiResponse(
+                responseCode = "403", description = "Forbidden", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(type = "object", nullable = true)
+                    ),
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404", description = "Refund not found", content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = ApiErrorResponseDto::class)
+                    ),
+                ]
+            ),
+        ]
+    )
+    fun getTransaction(
+        @AuthenticationPrincipal user: Any,
+        @Parameter(description = "Transaction id")
+        @PathVariable transactionId: String
+    ): TransactionResponseDto = transactionService.getTransaction(transactionId, user)
 }
 
 @Schema(description = "Paginated response of Transactions")

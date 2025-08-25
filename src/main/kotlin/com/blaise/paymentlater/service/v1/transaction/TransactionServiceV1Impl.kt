@@ -6,6 +6,7 @@ import com.blaise.paymentlater.domain.enum.TransactionStatus
 import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.domain.extension.toRefundResponseDto
 import com.blaise.paymentlater.domain.extension.toTransactionResponseDto
+import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.domain.model.PaymentIntent
 import com.blaise.paymentlater.domain.model.Refund
 import com.blaise.paymentlater.domain.model.Transaction
@@ -101,5 +102,14 @@ class TransactionServiceV1Impl(
             .also {
                 log.info { "Found ${transactions.totalElements} transactions" }
             }
+    }
+
+    override fun getTransaction(transactionId: String, user: Any): TransactionResponseDto {
+        val (transaction, paymentIntent) = getTransactionAndAssociatedPaymentIntent(transactionId)
+
+        if (user is Merchant && paymentIntent.merchantId != user.id)
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+
+        return transaction.toTransactionResponseDto()
     }
 }

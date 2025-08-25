@@ -19,4 +19,6 @@ interface TransactionServiceV1 {
     fun getTransactionAndAssociatedPaymentIntent(transactionId: String): Pair<Transaction, PaymentIntent>
 
     fun getTransactions(filter: TransactionFilterDto, page: Int, size: Int): PageResponseDto<TransactionResponseDto>
+
+    fun getTransaction(transactionId: String, user: Any): TransactionResponseDto
 }

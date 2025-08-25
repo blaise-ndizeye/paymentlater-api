@@ -17,7 +17,7 @@ interface PaymentServiceV1 {
         size: Int
     ): PageResponseDto<PaymentIntentResponseDto>
 
-    fun getPayment(id: String, user: Any): PaymentIntentResponseDto
+    fun getPayment(paymentIntentId: String, user: Any): PaymentIntentResponseDto
 
     fun findById(id: String): PaymentIntent
 

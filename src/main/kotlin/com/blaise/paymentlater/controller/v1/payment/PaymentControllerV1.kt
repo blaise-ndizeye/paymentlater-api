@@ -216,7 +216,7 @@ class PaymentControllerV1(
         return paymentService.getPayments(filter, page, size)
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{paymentIntentId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MERCHANT')")
     @SecurityRequirement(name = "BearerToken")
     @SecurityRequirement(name = "ApiKey")
@@ -254,8 +254,8 @@ class PaymentControllerV1(
     fun getPayment(
         @AuthenticationPrincipal user: Any,
         @Parameter(description = "Payment intent id")
-        @PathVariable id: String
-    ): PaymentIntentResponseDto = paymentService.getPayment(id, user)
+        @PathVariable paymentIntentId: String
+    ): PaymentIntentResponseDto = paymentService.getPayment(paymentIntentId, user)
 }
 
 @Schema(description = "Paginated response of PaymentIntent")

@@ -53,8 +53,8 @@ class PaymentServiceV1Impl(
             }
     }
 
-    override fun getPayment(id: String, user: Any): PaymentIntentResponseDto {
-        val paymentIntent = findById(id)
+    override fun getPayment(paymentIntentId: String, user: Any): PaymentIntentResponseDto {
+        val paymentIntent = findById(paymentIntentId)
         paymentIntent.let {
             log.info { "Found payment intent: ${paymentIntent.id}" }
         }
