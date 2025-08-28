@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.URL
 
 @Schema(description = "Merchant registration request details")
 data class MerchantRegisterRequestDto(
@@ -16,6 +17,6 @@ data class MerchantRegisterRequestDto(
     @field:Email(message = "Email is required")
     val email: String,
 
-    @field:Size(max = 70, message = "Webhook URL too long")
+    @field:URL(message = "Webhook URL must be valid")
     val webhookUrl: String? = null
 )

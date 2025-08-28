@@ -28,12 +28,7 @@ class MerchantAuthServiceV1Impl(
     private val hashEncoderConfig: HashEncoderConfig
 ) : MerchantAuthServiceV1 {
 
-    private fun generateKeys(): Triple<String, String, String> {
-        val rawApiKey = apiKeyConfig.generateApiKey()
-        val apiKeyDigest = hashEncoderConfig.digest(rawApiKey)
-        val hashedApiKey = hashEncoderConfig.encode(rawApiKey)
-        return Triple(rawApiKey, apiKeyDigest, hashedApiKey)
-    }
+    override fun save(merchant: Merchant): Merchant = merchantRepository.save(merchant)
 
     @Transactional
     override fun register(body: MerchantRegisterRequestDto): MerchantRegisterResponseDto {
@@ -42,7 +37,7 @@ class MerchantAuthServiceV1Impl(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "User already exists")
 
         val (rawApiKey, apiKeyDigest, hashedApiKey) = generateKeys()
-        val newMerchant = merchantRepository.save(
+        val newMerchant = save(
             Merchant(
                 name = body.name,
                 email = body.email,
@@ -104,7 +99,14 @@ class MerchantAuthServiceV1Impl(
     override fun setWebhook(webhookUrl: String): ResponseEntity<Unit> {
         val merchant = getAuthenticatedMerchant()
         val updatedMerchant = merchant.copy(webhookUrl = webhookUrl)
-        merchantRepository.save(updatedMerchant)
+        save(updatedMerchant)
         return ResponseEntity.ok().build()
+    }
+
+    private fun generateKeys(): Triple<String, String, String> {
+        val rawApiKey = apiKeyConfig.generateApiKey()
+        val apiKeyDigest = hashEncoderConfig.digest(rawApiKey)
+        val hashedApiKey = hashEncoderConfig.encode(rawApiKey)
+        return Triple(rawApiKey, apiKeyDigest, hashedApiKey)
     }
 }

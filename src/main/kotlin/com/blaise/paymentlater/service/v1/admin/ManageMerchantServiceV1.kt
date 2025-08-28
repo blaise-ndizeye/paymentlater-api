@@ -1,5 +1,6 @@
 package com.blaise.paymentlater.service.v1.admin
 
+import com.blaise.paymentlater.dto.request.UpdateMerchantRequestDto
 import com.blaise.paymentlater.dto.response.MerchantProfileResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.shared.MerchantFilterDto
@@ -12,4 +13,6 @@ interface ManageMerchantServiceV1 {
     ): PageResponseDto<MerchantProfileResponseDto>
 
     fun getMerchantById(merchantId: String): MerchantProfileResponseDto
+
+    fun updateMerchant(merchantId: String, body: UpdateMerchantRequestDto): MerchantProfileResponseDto
 }

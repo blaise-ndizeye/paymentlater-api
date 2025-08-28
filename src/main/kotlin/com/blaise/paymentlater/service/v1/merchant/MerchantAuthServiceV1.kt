@@ -7,6 +7,8 @@ import org.bson.types.ObjectId
 import org.springframework.http.ResponseEntity
 
 interface MerchantAuthServiceV1 {
+    fun save(merchant: Merchant): Merchant
+
     fun register(body: MerchantRegisterRequestDto): MerchantRegisterResponseDto
 
     fun findById(id: ObjectId): Merchant

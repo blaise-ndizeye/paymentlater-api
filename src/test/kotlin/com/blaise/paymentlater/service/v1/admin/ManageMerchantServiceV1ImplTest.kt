@@ -1,5 +1,6 @@
 package com.blaise.paymentlater.service.v1.admin
 
+import com.blaise.paymentlater.domain.enum.UserRole
 import com.blaise.paymentlater.domain.extension.toMerchantProfileResponseDto
 import com.blaise.paymentlater.repository.MerchantRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1Impl
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.domain.PageImpl
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
+import java.time.Instant
 
 @ExtendWith(MockKExtension::class)
 class ManageMerchantServiceV1ImplTest {
@@ -87,6 +89,63 @@ class ManageMerchantServiceV1ImplTest {
 
             assertThrows<ResponseStatusException> {
                 manageMerchantService.getMerchantById(merchantId)
+            }
+            verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
+        }
+    }
+
+    @Nested
+    @DisplayName("UPDATE MERCHANT")
+    inner class UpdateMerchant {
+
+        @Test
+        fun `should update merchant`() {
+            val merchantId = "64d1b3b3b3b3b3b3b3b3b3b3"
+            val requestDto = TestFactory.updateMerchantRequestDto()
+            val merchant = TestFactory.merchant1()
+            val updatedMerchant = merchant.copy(
+                name = requestDto.name!!,
+                email = requestDto.email!!,
+                webhookUrl = requestDto.webhookUrl,
+                roles = requestDto.roles!!.map { UserRole.valueOf(it) }.toSet(),
+                updatedAt = Instant.now()
+            )
+
+            every { merchantService.findById(ObjectId(merchantId)) } returns merchant
+            every { merchantService.save(any()) } returns updatedMerchant
+
+            val result = manageMerchantService.updateMerchant(merchantId, requestDto)
+
+            assertEquals(updatedMerchant.toMerchantProfileResponseDto(), result)
+            verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
+            verify(exactly = 1) { merchantService.save(any()) }
+        }
+
+        @Test
+        fun `should throw exception when merchant not found`() {
+            val merchantId = "64d1b3b3b3b3b3b3b3b3b3b3"
+            val requestDto = TestFactory.updateMerchantRequestDto()
+
+            every {
+                merchantService.findById(ObjectId(merchantId))
+            } throws ResponseStatusException(HttpStatus.NOT_FOUND)
+
+            assertThrows<ResponseStatusException> {
+                manageMerchantService.updateMerchant(merchantId, requestDto)
+            }
+            verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
+        }
+
+        @Test
+        fun `should throw exception when roles are invalid`() {
+            val merchantId = "64d1b3b3b3b3b3b3b3b3b3b3"
+            val requestDto = TestFactory.updateMerchantRequestDto().copy(
+                roles = listOf("INVALID_ROLE")
+            )
+            every { merchantService.findById(ObjectId(merchantId)) } returns TestFactory.merchant1()
+
+            assertThrows<IllegalArgumentException> {
+                manageMerchantService.updateMerchant(merchantId, requestDto)
             }
             verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
         }

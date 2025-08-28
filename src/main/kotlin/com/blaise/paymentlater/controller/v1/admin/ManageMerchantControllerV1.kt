@@ -1,6 +1,7 @@
 package com.blaise.paymentlater.controller.v1.admin
 
 import com.blaise.paymentlater.domain.enum.UserRole
+import com.blaise.paymentlater.dto.request.UpdateMerchantRequestDto
 import com.blaise.paymentlater.dto.response.ApiErrorResponseDto
 import com.blaise.paymentlater.dto.response.MerchantProfileResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
@@ -13,9 +14,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -27,6 +31,38 @@ import java.time.Instant
 class ManageMerchantControllerV1(
     private val manageMerchantService: ManageMerchantServiceV1
 ) {
+
+    @PatchMapping("/{merchantId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Update a merchant",
+        description = "Update a merchant",
+        security = [SecurityRequirement(name = "BearerToken")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Merchant updated",
+                content = [Content(schema = Schema(implementation = MerchantProfileResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Merchant not found",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            )
+        ]
+    )
+    fun updateMerchant(
+        @Parameter(description = "Merchant id")
+        @PathVariable merchantId: String,
+
+        @Valid @RequestBody body: UpdateMerchantRequestDto
+    ): MerchantProfileResponseDto = manageMerchantService.updateMerchant(merchantId, body)
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

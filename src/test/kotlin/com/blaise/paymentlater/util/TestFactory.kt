@@ -186,4 +186,11 @@ object TestFactory {
         isActive = true,
         roles = listOf(UserRole.MERCHANT)
     )
+
+    fun updateMerchantRequestDto() = UpdateMerchantRequestDto(
+        name = "John Updated",
+        email = "john@updated",
+        webhookUrl = "https://example.com/webhook",
+        roles = listOf("MERCHANT")
+    )
 }
