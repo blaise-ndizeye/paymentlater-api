@@ -60,7 +60,7 @@ class PaymentServiceV1ImplTest {
 
             every { paymentServiceSpy.findById(id) } returns paymentIntent
 
-            val result = paymentServiceSpy.getPayment(id, TestFactory.merchant())
+            val result = paymentServiceSpy.getPayment(id, TestFactory.merchant1())
 
             assertEquals(paymentIntent.toPaymentIntentResponseDto(), result)
             verify(exactly = 1) { paymentServiceSpy.findById(id) }
@@ -74,7 +74,7 @@ class PaymentServiceV1ImplTest {
             every { paymentServiceSpy.findById(id) } throws ResponseStatusException(HttpStatus.NOT_FOUND)
 
             assertThrows<ResponseStatusException> {
-                paymentServiceSpy.getPayment(id, TestFactory.merchant())
+                paymentServiceSpy.getPayment(id, TestFactory.merchant1())
             }
 
             verify(exactly = 1) { paymentServiceSpy.findById(id) }
@@ -146,7 +146,7 @@ class PaymentServiceV1ImplTest {
         @Test
         fun `should create payment intent`() {
             val body = TestFactory.paymentIntentRequestDto()
-            val merchant = TestFactory.merchant()
+            val merchant = TestFactory.merchant1()
             val totalAmount = body.items.sumOf { it.unitAmount * it.quantity.toBigDecimal() }
 
             every { merchantAuthService.getAuthenticatedMerchant() } returns merchant
@@ -191,7 +191,7 @@ class PaymentServiceV1ImplTest {
             every { paymentServiceSpy.findById(id) } returns paymentIntent
             every { paymentIntentRepository.save(any()) } returns paymentIntent
 
-            val result = paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+            val result = paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant1())
 
             assertEquals(paymentIntent.toPaymentIntentResponseDto(), result)
             verify(exactly = 1) { paymentServiceSpy.findById(id) }
@@ -205,7 +205,7 @@ class PaymentServiceV1ImplTest {
             every { paymentServiceSpy.findById(id) } throws ResponseStatusException(HttpStatus.NOT_FOUND)
 
             assertThrows<ResponseStatusException> {
-                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant1())
             }
 
             verify(exactly = 1) { paymentServiceSpy.findById(id) }
@@ -221,7 +221,7 @@ class PaymentServiceV1ImplTest {
             every { paymentServiceSpy.findById(id) } returns paymentIntent
 
             assertThrows<ResponseStatusException> {
-                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant1())
             }
 
             verify(exactly = 1) { paymentServiceSpy.findById(id) }
@@ -238,7 +238,7 @@ class PaymentServiceV1ImplTest {
             every { paymentServiceSpy.findById(id) } returns paymentIntent
 
             assertThrows<ResponseStatusException> {
-                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant())
+                paymentServiceSpy.cancelPaymentIntent(id, TestFactory.merchant1())
             }
 
             verify(exactly = 1) { paymentServiceSpy.findById(id) }
@@ -254,7 +254,7 @@ class PaymentServiceV1ImplTest {
         fun `should confirm payment intent`() {
             val id = "123"
             val paymentIntent = TestFactory.paymentIntent1()
-            val merchant = TestFactory.merchant()
+            val merchant = TestFactory.merchant1()
             val paymentServiceSpy = spyk(paymentService)
 
             every { paymentServiceSpy.findById(id) } returns paymentIntent
@@ -293,7 +293,7 @@ class PaymentServiceV1ImplTest {
         fun `should throw exception if webhook url is not set for merchant`() {
             val id = "123"
             val paymentIntent = TestFactory.paymentIntent1()
-            val merchant = TestFactory.merchant().copy(webhookUrl = null)
+            val merchant = TestFactory.merchant1().copy(webhookUrl = null)
             val paymentServiceSpy = spyk(paymentService)
 
             every { paymentServiceSpy.findById(id) } returns paymentIntent
@@ -314,7 +314,7 @@ class PaymentServiceV1ImplTest {
             val paymentServiceSpy = spyk(paymentService)
 
             every { paymentServiceSpy.findById(id) } returns paymentIntent
-            every { merchantAuthService.getAuthenticatedMerchant() } returns TestFactory.merchant()
+            every { merchantAuthService.getAuthenticatedMerchant() } returns TestFactory.merchant1()
 
             assertThrows<ResponseStatusException> {
                 paymentServiceSpy.confirmPaymentIntent(id, TestFactory.confirmPaymentIntentRequestDto())
@@ -332,7 +332,7 @@ class PaymentServiceV1ImplTest {
             val paymentServiceSpy = spyk(paymentService)
 
             every { paymentServiceSpy.findById(id) } returns paymentIntent
-            every { merchantAuthService.getAuthenticatedMerchant() } returns TestFactory.merchant()
+            every { merchantAuthService.getAuthenticatedMerchant() } returns TestFactory.merchant1()
 
             assertThrows<ResponseStatusException> {
                 paymentServiceSpy.confirmPaymentIntent(id, TestFactory.confirmPaymentIntentRequestDto())

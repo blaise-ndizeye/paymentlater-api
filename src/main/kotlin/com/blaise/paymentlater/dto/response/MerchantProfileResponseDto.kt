@@ -8,5 +8,6 @@ data class MerchantProfileResponseDto(
     val name: String,
     val email: String,
     val webhookUrl: String?,
-    val createdAt: String
+    val createdAt: String,
+    val updatedAt: String
 )

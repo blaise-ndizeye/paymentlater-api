@@ -1,0 +1,13 @@
+package com.blaise.paymentlater.service.v1.admin
+
+import com.blaise.paymentlater.dto.response.MerchantProfileResponseDto
+import com.blaise.paymentlater.dto.response.PageResponseDto
+import com.blaise.paymentlater.dto.shared.MerchantFilterDto
+
+interface ManageMerchantServiceV1 {
+    fun getAllMerchants(
+        filter: MerchantFilterDto,
+        page: Int,
+        size: Int
+    ): PageResponseDto<MerchantProfileResponseDto>
+}

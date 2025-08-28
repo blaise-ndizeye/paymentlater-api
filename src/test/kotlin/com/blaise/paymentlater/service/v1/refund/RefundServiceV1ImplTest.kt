@@ -65,7 +65,7 @@ class RefundServiceV1ImplTest {
                 transactionService.getTransactionAndAssociatedPaymentIntent(any())
             } returns Pair(transaction, paymentIntent)
             every { adminAuthService.getAuthenticatedAdmin() } returns TestFactory.admin()
-            every { merchantAuthService.findById(any()) } returns TestFactory.merchant()
+            every { merchantAuthService.findById(any()) } returns TestFactory.merchant1()
             every {
                 refundRepository.sumApprovedRefundsForPaymentIntent(paymentIntent.id)
             } returns BigDecimal.ONE
@@ -114,7 +114,7 @@ class RefundServiceV1ImplTest {
                 transactionService.getTransactionAndAssociatedPaymentIntent(any())
             } returns Pair(transaction, paymentIntent)
             every { adminAuthService.getAuthenticatedAdmin() } returns TestFactory.admin()
-            every { merchantAuthService.findById(any()) } returns TestFactory.merchant()
+            every { merchantAuthService.findById(any()) } returns TestFactory.merchant1()
             every {
                 refundRepository.sumApprovedRefundsForPaymentIntent(paymentIntent.id)
             } returns paymentIntent.amount
@@ -146,7 +146,7 @@ class RefundServiceV1ImplTest {
                 transactionService.getTransactionAndAssociatedPaymentIntent(any())
             } returns Pair(TestFactory.transaction1(), TestFactory.paymentIntent1())
             every { adminAuthService.getAuthenticatedAdmin() } returns TestFactory.admin()
-            every { merchantAuthService.findById(any()) } returns TestFactory.merchant()
+            every { merchantAuthService.findById(any()) } returns TestFactory.merchant1()
             every { refundRepository.save(any()) } returns TestFactory.refund1()
             every { eventPublisher.publishEvent(any()) } just Runs
 
@@ -193,7 +193,7 @@ class RefundServiceV1ImplTest {
                 transactionService.getTransactionAndAssociatedPaymentIntent(any())
             } returns Pair(TestFactory.transaction1(), TestFactory.paymentIntent1())
 
-            val result = refundServiceSpy.getRefund(refundId, TestFactory.merchant())
+            val result = refundServiceSpy.getRefund(refundId, TestFactory.merchant1())
 
             assertEquals(TestFactory.refund1().toRefundResponseDto(), result)
             verify(exactly = 1) { refundServiceSpy.findById(refundId) }
@@ -208,7 +208,7 @@ class RefundServiceV1ImplTest {
             every { refundServiceSpy.findById(refundId) } throws ResponseStatusException(HttpStatus.NOT_FOUND)
 
             assertThrows<ResponseStatusException> {
-                refundServiceSpy.getRefund(refundId, TestFactory.merchant())
+                refundServiceSpy.getRefund(refundId, TestFactory.merchant1())
             }
 
             verify(exactly = 1) { refundServiceSpy.findById(refundId) }
@@ -227,7 +227,7 @@ class RefundServiceV1ImplTest {
             assertThrows<ResponseStatusException> {
                 refundServiceSpy.getRefund(
                     refundId,
-                    TestFactory.merchant().copy(id = ObjectId())
+                    TestFactory.merchant1().copy(id = ObjectId())
                 )
             }
 

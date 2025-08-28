@@ -20,4 +20,5 @@ fun Merchant.toMerchantProfileResponseDto(): MerchantProfileResponseDto =
         email = email,
         webhookUrl = webhookUrl,
         createdAt = createdAt.toString(),
+        updatedAt = updatedAt.toString(),
     )

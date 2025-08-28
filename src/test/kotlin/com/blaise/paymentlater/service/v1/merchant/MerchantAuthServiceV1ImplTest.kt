@@ -21,7 +21,7 @@ import kotlin.test.Test
 class MerchantAuthServiceV1ImplTest {
     private val merchantRepository: MerchantRepository = mockk()
     private val apiKeyConfig: ApiKeyConfig = mockk()
-    private val mailService: MailService = mockk()
+    private val mailService: MailService = mockk(relaxed = true)
     private val hashEncoderConfig: HashEncoderConfig = mockk()
     private lateinit var merchantAuthService: MerchantAuthServiceV1Impl
 
@@ -46,7 +46,7 @@ class MerchantAuthServiceV1ImplTest {
             val apiKeyDigest = "fake-api-key-digest"
             val apiKeyHash = "fake-api-key-hash"
             val registerDto = TestFactory.merchantRegisterRequestDto()
-            val registeredMerchant = TestFactory.merchant()
+            val registeredMerchant = TestFactory.merchant1()
 
             every { merchantRepository.existsByEmail(registerDto.email) } returns false
             every { apiKeyConfig.generateApiKey() } returns apiKey
@@ -90,7 +90,7 @@ class MerchantAuthServiceV1ImplTest {
         @Test
         fun `should regenerate API key`() {
             val email = "john@doe"
-            val merchant = TestFactory.merchant()
+            val merchant = TestFactory.merchant1()
             val apiKey = "fake-api-key"
             val apiKeyDigest = "fake-api-key-digest"
             val apiKeyHash = "fake-api-key-hash"
@@ -134,7 +134,7 @@ class MerchantAuthServiceV1ImplTest {
         @Test
         fun `should set webhook`() {
             val webhookUrl = "https://example.com/webhook"
-            val merchant = TestFactory.merchant()
+            val merchant = TestFactory.merchant1()
             val merchantAuthServiceSpy = spyk(merchantAuthService)
 
             every { merchantAuthServiceSpy.getAuthenticatedMerchant() } returns merchant

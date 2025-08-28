@@ -4,6 +4,7 @@ import com.blaise.paymentlater.domain.enum.*
 import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.*
 import com.blaise.paymentlater.dto.request.*
+import com.blaise.paymentlater.dto.shared.MerchantFilterDto
 import com.blaise.paymentlater.dto.shared.RefundFilterDto
 import com.blaise.paymentlater.dto.shared.TransactionFilterDto
 import org.bson.types.ObjectId
@@ -17,10 +18,20 @@ object TestFactory {
         password: String = "encodedPassword"
     ) = Admin(id, username, password)
 
-    fun merchant(
+    fun merchant1(
         id: ObjectId = ObjectId("688343c2b89f9cf214b8aae5"),
-        name: String = "merchant",
+        name: String = "John Doe",
         email: String = "john@doe",
+        webhookUrl: String = "https://example.com/webhook",
+        isActive: Boolean = true,
+        apiKey: String = "fake-api-key",
+        apiKeyDigest: String = "fake-api-key-digest"
+    ) = Merchant(id, name, email, apiKey, apiKeyDigest, webhookUrl, isActive)
+
+    fun merchant2(
+        id: ObjectId = ObjectId("688343c2b89f9cf214b8aae5"),
+        name: String = "Jane Doe",
+        email: String = "jane@doe",
         webhookUrl: String = "https://example.com/webhook",
         isActive: Boolean = true,
         apiKey: String = "fake-api-key",
@@ -43,7 +54,7 @@ object TestFactory {
         webhookUrl
     )
 
-    fun merchantResponseDto() = merchant().toMerchantRegisterResponseDto()
+    fun merchantResponseDto() = merchant1().toMerchantRegisterResponseDto()
 
     fun paymentIntent1(): PaymentIntent {
         val billableItems = listOf(billableItem1(), billableItem2())
@@ -55,7 +66,7 @@ object TestFactory {
             currency = Currency.RWF,
             status = PaymentStatus.PENDING,
             metadata = paymentMetadataRequestDto(),
-            merchantId = ObjectId(merchant().id.toHexString()),
+            merchantId = ObjectId(merchant1().id.toHexString()),
             items = billableItems
         )
     }
@@ -66,7 +77,7 @@ object TestFactory {
         currency = Currency.USD,
         status = PaymentStatus.FAILED,
         metadata = paymentMetadataRequestDto(),
-        merchantId = ObjectId(merchant().id.toHexString()),
+        merchantId = ObjectId(merchant1().id.toHexString()),
         items = listOf(billableItem1(), billableItem2())
     )
 
@@ -92,7 +103,7 @@ object TestFactory {
 
     fun paymentMetadataRequestDto() = PaymentMetadataRequestDto(
         referenceId = "ref1",
-        userId = merchant().id.toHexString(),
+        userId = merchant1().id.toHexString(),
         phone = "1234567890",
         email = "john@doe",
         description = "description1",
@@ -168,4 +179,11 @@ object TestFactory {
     fun refundFilterDto() = RefundFilterDto(statuses = listOf(RefundStatus.APPROVED))
 
     fun transactionFilterDto() = TransactionFilterDto(statuses = listOf(TransactionStatus.SUCCESS))
+
+    fun merchantFilterDto() = MerchantFilterDto(
+        name = "Doe",
+        email = "@doe",
+        isActive = true,
+        roles = listOf(UserRole.MERCHANT)
+    )
 }
