@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -33,6 +34,7 @@ class ManageMerchantControllerV1(
     @Operation(
         summary = "Get all merchants",
         description = "Get all merchants",
+        security = [SecurityRequirement(name = "BearerToken")],
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -104,4 +106,34 @@ class ManageMerchantControllerV1(
 
         return manageMerchantService.getAllMerchants(filter, page, size)
     }
+
+    @GetMapping("/{merchantId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Get merchant by id",
+        description = "Get merchant by id",
+        security = [SecurityRequirement(name = "BearerToken")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Merchant found",
+                content = [Content(schema = Schema(implementation = MerchantProfileResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Merchant not found",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            )
+        ]
+    )
+    fun getMerchantById(
+        @Parameter(description = "Merchant id")
+        @PathVariable("merchantId") merchantId: String
+    ): MerchantProfileResponseDto = manageMerchantService.getMerchantById(merchantId)
 }

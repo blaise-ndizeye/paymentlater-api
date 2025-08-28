@@ -10,4 +10,6 @@ interface ManageMerchantServiceV1 {
         page: Int,
         size: Int
     ): PageResponseDto<MerchantProfileResponseDto>
+
+    fun getMerchantById(merchantId: String): MerchantProfileResponseDto
 }

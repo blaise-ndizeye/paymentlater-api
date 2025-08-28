@@ -6,14 +6,17 @@ import com.blaise.paymentlater.dto.response.MerchantProfileResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.shared.MerchantFilterDto
 import com.blaise.paymentlater.repository.MerchantRepository
+import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
 import mu.KotlinLogging
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 
 private val log = KotlinLogging.logger {}
 
 @Service
 class ManageMerchantServiceV1Impl(
-    private val merchantRepository: MerchantRepository
+    private val merchantRepository: MerchantRepository,
+    private val merchantService: MerchantAuthServiceV1
 ) : ManageMerchantServiceV1 {
 
     override fun getAllMerchants(
@@ -28,5 +31,10 @@ class ManageMerchantServiceV1Impl(
             .also {
                 log.info { "Found ${merchants.totalElements} merchants" }
             }
+    }
+
+    override fun getMerchantById(merchantId: String): MerchantProfileResponseDto {
+        val merchant = merchantService.findById(ObjectId(merchantId))
+        return merchant.toMerchantProfileResponseDto()
     }
 }
