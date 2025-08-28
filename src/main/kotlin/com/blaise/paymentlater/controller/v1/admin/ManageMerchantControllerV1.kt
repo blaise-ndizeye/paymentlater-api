@@ -65,6 +65,32 @@ class ManageMerchantControllerV1(
         @Valid @RequestBody body: UpdateMerchantRequestDto
     ): MerchantProfileResponseDto = manageMerchantService.updateMerchant(merchantId, body)
 
+    @PatchMapping("/{merchantId}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Activate a merchant",
+        description = "Activate a merchant",
+        security = [SecurityRequirement(name = "BearerToken")],
+        responses = [
+            ApiResponse(responseCode = "200", description = "Merchant activated"),
+            ApiResponse(
+                responseCode = "400",
+                description = "Merchant is already active",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            )
+        ]
+    )
+    fun activateMerchant(
+        @Parameter(description = "Merchant id")
+        @PathVariable merchantId: String
+    ): ResponseEntity<Unit> = manageMerchantService.activateMerchant(merchantId)
+
     @PatchMapping("/{merchantId}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "BearerToken")

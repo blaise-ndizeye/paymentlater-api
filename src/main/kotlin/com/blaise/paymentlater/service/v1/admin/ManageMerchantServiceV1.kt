@@ -17,5 +17,7 @@ interface ManageMerchantServiceV1 {
 
     fun updateMerchant(merchantId: String, body: UpdateMerchantRequestDto): MerchantProfileResponseDto
 
+    fun activateMerchant(merchantId: String): ResponseEntity<Unit>
+
     fun deactivateMerchant(merchantId: String): ResponseEntity<Unit>
 }

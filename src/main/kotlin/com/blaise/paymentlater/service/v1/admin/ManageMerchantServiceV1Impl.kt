@@ -72,6 +72,18 @@ class ManageMerchantServiceV1Impl(
         return updatedMerchant.toMerchantProfileResponseDto()
     }
 
+    override fun activateMerchant(merchantId: String): ResponseEntity<Unit> {
+        val merchant = merchantService.findById(ObjectId(merchantId))
+
+        if (merchant.isActive)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Merchant is already active")
+
+        val updatedMerchant = merchant.copy(isActive = true, updatedAt = Instant.now())
+        merchantService.save(updatedMerchant)
+
+        return ResponseEntity.ok().build()
+    }
+
     override fun deactivateMerchant(merchantId: String): ResponseEntity<Unit> {
         val merchant = merchantService.findById(ObjectId(merchantId))
 
