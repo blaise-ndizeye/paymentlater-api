@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -63,6 +64,33 @@ class ManageMerchantControllerV1(
 
         @Valid @RequestBody body: UpdateMerchantRequestDto
     ): MerchantProfileResponseDto = manageMerchantService.updateMerchant(merchantId, body)
+
+    @PatchMapping("/{merchantId}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Deactivate a merchant",
+        description = "Deactivate a merchant",
+        security = [SecurityRequirement(name = "BearerToken")],
+        responses = [
+            ApiResponse(responseCode = "200", description = "Merchant deactivated"),
+            ApiResponse(
+                responseCode = "400",
+                description = "Merchant is already inactive",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            )
+        ]
+    )
+    fun deactivateMerchant(
+        @Parameter(description = "Merchant id")
+        @PathVariable merchantId: String
+    ): ResponseEntity<Unit> = manageMerchantService.deactivateMerchant(merchantId)
+
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

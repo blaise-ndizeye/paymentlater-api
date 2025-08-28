@@ -150,4 +150,51 @@ class ManageMerchantServiceV1ImplTest {
             verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
         }
     }
+
+    @Nested
+    @DisplayName("DEACTIVATE MERCHANT")
+    inner class DeactivateMerchant {
+
+        @Test
+        fun `should deactivate merchant`() {
+            val merchantId = "64d1b3b3b3b3b3b3b3b3b3b3"
+            val merchant = TestFactory.merchant1()
+
+            every { merchantService.findById(ObjectId(merchantId)) } returns merchant
+            every { merchantService.save(any()) } returns merchant.copy(isActive = false)
+
+            val result = manageMerchantService.deactivateMerchant(merchantId)
+
+            assertEquals(HttpStatus.OK, result.statusCode)
+            verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
+            verify(exactly = 1) { merchantService.save(any()) }
+        }
+
+        @Test
+        fun `should throw exception when merchant is already inactive`() {
+            val merchantId = "64d1b3b3b3b3b3b3b3b3b3b3"
+            val merchant = TestFactory.merchant1()
+
+            every { merchantService.findById(ObjectId(merchantId)) } returns merchant.copy(isActive = false)
+
+            assertThrows<ResponseStatusException> {
+                manageMerchantService.deactivateMerchant(merchantId)
+            }
+            verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
+        }
+
+        @Test
+        fun `should throw exception when merchant not found`() {
+            val merchantId = "64d1b3b3b3b3b3b3b3b3b3b3"
+
+            every {
+                merchantService.findById(ObjectId(merchantId))
+            } throws ResponseStatusException(HttpStatus.NOT_FOUND)
+
+            assertThrows<ResponseStatusException> {
+                manageMerchantService.deactivateMerchant(merchantId)
+            }
+            verify(exactly = 1) { merchantService.findById(ObjectId(merchantId)) }
+        }
+    }
 }

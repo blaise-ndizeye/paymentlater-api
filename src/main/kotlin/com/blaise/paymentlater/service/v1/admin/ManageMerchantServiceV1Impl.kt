@@ -11,7 +11,10 @@ import com.blaise.paymentlater.repository.MerchantRepository
 import com.blaise.paymentlater.service.v1.merchant.MerchantAuthServiceV1
 import mu.KotlinLogging
 import org.bson.types.ObjectId
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 
 private val log = KotlinLogging.logger {}
@@ -67,5 +70,17 @@ class ManageMerchantServiceV1Impl(
         val updatedMerchant = merchantService.save(merchantToUpdate)
 
         return updatedMerchant.toMerchantProfileResponseDto()
+    }
+
+    override fun deactivateMerchant(merchantId: String): ResponseEntity<Unit> {
+        val merchant = merchantService.findById(ObjectId(merchantId))
+
+        if (!merchant.isActive)
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Merchant is already inactive")
+
+        val updatedMerchant = merchant.copy(isActive = false, updatedAt = Instant.now())
+        merchantService.save(updatedMerchant)
+
+        return ResponseEntity.ok().build()
     }
 }
