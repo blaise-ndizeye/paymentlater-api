@@ -5,11 +5,13 @@ import com.blaise.paymentlater.domain.extension.toMerchantRegisterResponseDto
 import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.request.MerchantRegisterRequestDto
 import com.blaise.paymentlater.dto.response.MerchantRegisterResponseDto
+import com.blaise.paymentlater.dto.shared.RegisterMerchantEventDto
 import com.blaise.paymentlater.notification.MailService
 import com.blaise.paymentlater.repository.MerchantRepository
 import com.blaise.paymentlater.security.merchant.ApiKeyConfig
 import mu.KotlinLogging
 import org.bson.types.ObjectId
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -25,7 +27,8 @@ class MerchantAuthServiceV1Impl(
     private val merchantRepository: MerchantRepository,
     private val apiKeyConfig: ApiKeyConfig,
     private val mailService: MailService,
-    private val hashEncoderConfig: HashEncoderConfig
+    private val hashEncoderConfig: HashEncoderConfig,
+    private val eventPublisher: ApplicationEventPublisher
 ) : MerchantAuthServiceV1 {
 
     override fun save(merchant: Merchant): Merchant = merchantRepository.save(merchant)
@@ -47,9 +50,18 @@ class MerchantAuthServiceV1Impl(
             )
         )
 
-        mailService.sendMerchantRegisterApiKeyEmail(newMerchant.email, newMerchant.name, rawApiKey)
-        log.info { "Merchant registered: ${newMerchant.id}" }
-        return newMerchant.toMerchantRegisterResponseDto().copy(apiKey = rawApiKey)
+        eventPublisher.publishEvent(
+            RegisterMerchantEventDto(
+                merchant = newMerchant,
+                apiKey = rawApiKey
+            )
+        )
+
+        return newMerchant.toMerchantRegisterResponseDto()
+            .copy(apiKey = rawApiKey)
+            .also {
+                log.info { "Merchant registered: ${newMerchant.id}" }
+            }
     }
 
     @PreAuthorize("hasAnyRole('MERCHANT', 'ADMIN')")

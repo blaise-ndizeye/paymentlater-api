@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import kotlin.test.Test
@@ -23,6 +24,7 @@ class MerchantAuthServiceV1ImplTest {
     private val apiKeyConfig: ApiKeyConfig = mockk()
     private val mailService: MailService = mockk(relaxed = true)
     private val hashEncoderConfig: HashEncoderConfig = mockk()
+    private val eventPublisher: ApplicationEventPublisher = mockk(relaxed = true)
     private lateinit var merchantAuthService: MerchantAuthServiceV1Impl
 
     @BeforeEach
@@ -31,7 +33,8 @@ class MerchantAuthServiceV1ImplTest {
             merchantRepository,
             apiKeyConfig,
             mailService,
-            hashEncoderConfig
+            hashEncoderConfig,
+            eventPublisher
         )
         clearMocks(merchantRepository, apiKeyConfig, mailService)
     }
@@ -56,6 +59,7 @@ class MerchantAuthServiceV1ImplTest {
             every {
                 mailService.sendMerchantRegisterApiKeyEmail(registerDto.email, registerDto.name, apiKey)
             } just Runs
+            every { eventPublisher.publishEvent(any()) } just Runs
 
             val result = merchantAuthService.register(registerDto)
             val responseDto = TestFactory.merchantResponseDto()
