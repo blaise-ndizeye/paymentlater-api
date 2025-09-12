@@ -4,7 +4,7 @@ import com.blaise.paymentlater.domain.model.Merchant
 import com.blaise.paymentlater.dto.response.MerchantOverviewResponseDto
 import com.blaise.paymentlater.dto.shared.BucketCount
 import com.blaise.paymentlater.dto.shared.MerchantFilterDto
-import com.blaise.paymentlater.dto.shared.MerchantOverviewFilter
+import com.blaise.paymentlater.dto.shared.MerchantOverviewFilterDto
 import com.blaise.paymentlater.repository.util.buildMongoCriteria
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -68,7 +68,7 @@ class MerchantExtensionRepositoryImpl(
         return PageImpl(list, pageable, total)
     }
 
-    override fun getMerchantsOverview(filter: MerchantOverviewFilter): MerchantOverviewResponseDto {
+    override fun getMerchantsOverview(filter: MerchantOverviewFilterDto): MerchantOverviewResponseDto {
         val matchCriteria = buildMongoCriteria {
             gte("createdAt", filter.createdStart)
             lte("createdAt", filter.createdEnd)

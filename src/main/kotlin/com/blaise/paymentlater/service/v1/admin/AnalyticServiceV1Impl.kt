@@ -1,15 +1,30 @@
 package com.blaise.paymentlater.service.v1.admin
 
-import com.blaise.paymentlater.dto.shared.MerchantOverviewFilter
+import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.dto.response.MerchantOverviewResponseDto
+import com.blaise.paymentlater.dto.response.PageResponseDto
+import com.blaise.paymentlater.dto.response.TransactionOverviewResponseDto
+import com.blaise.paymentlater.dto.shared.MerchantOverviewFilterDto
+import com.blaise.paymentlater.dto.shared.TransactionOverviewFilterDto
 import com.blaise.paymentlater.repository.MerchantRepository
+import com.blaise.paymentlater.repository.TransactionRepository
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
+
+private val log = KotlinLogging.logger {}
 
 @Service
 class AnalyticServiceV1Impl(
-    private val merchantRepository: MerchantRepository
+    private val merchantRepository: MerchantRepository,
+    private val transactionRepository: TransactionRepository
 ) : AnalyticServiceV1 {
-    override fun getMerchantsOverview(filter: MerchantOverviewFilter): MerchantOverviewResponseDto {
+    override fun getMerchantsOverview(filter: MerchantOverviewFilterDto): MerchantOverviewResponseDto {
         return merchantRepository.getMerchantsOverview(filter)
+    }
+
+    override fun getTransactionsOverview(filter: TransactionOverviewFilterDto): PageResponseDto<TransactionOverviewResponseDto> {
+        return transactionRepository.getTransactionOverview(filter)
+            .toPageResponseDto()
+            .also { log.info { "Found ${it.totalElements} transaction overviews" } }
     }
 }
