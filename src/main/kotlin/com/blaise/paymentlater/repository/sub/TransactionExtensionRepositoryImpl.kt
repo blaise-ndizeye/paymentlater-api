@@ -113,7 +113,7 @@ class TransactionExtensionRepositoryImpl(
      * 
      * EXAMPLE:
      * Merchant A has: 100 USD + 50 EUR transactions
-     * groupByCurrency=true:  Row1(A, USD, $100), Row2(A, EUR, €50) 
+     * groupByCurrency=true: Row1(A, USD, $100), Row2(A, EUR, €50)
      * groupByCurrency=false: Row1(A, USD, $100), Row2(A, EUR, €50) - same result!
      */
     override fun getTransactionOverview(filter: TransactionOverviewFilterDto): Page<TransactionOverviewResponseDto> {
@@ -165,7 +165,6 @@ class TransactionExtensionRepositoryImpl(
             .build()
 
         // Group stage - ALWAYS group by currency to avoid financial calculation errors
-        // Both groupByCurrency true/false scenarios group by currency for data integrity
         val group = Aggregation.group(
             Fields.fields("paymentIntent.merchantId", "merchant.name", "currency")
         )

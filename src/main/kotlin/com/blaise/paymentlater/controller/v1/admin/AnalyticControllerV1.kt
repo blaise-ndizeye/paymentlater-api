@@ -5,8 +5,10 @@ import com.blaise.paymentlater.domain.enum.TransactionStatus
 import com.blaise.paymentlater.dto.response.ApiErrorResponseDto
 import com.blaise.paymentlater.dto.response.MerchantOverviewResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
+import com.blaise.paymentlater.dto.response.RefundOverviewResponseDto
 import com.blaise.paymentlater.dto.response.TransactionOverviewResponseDto
 import com.blaise.paymentlater.dto.shared.MerchantOverviewFilterDto
+import com.blaise.paymentlater.dto.shared.RefundOverviewFilterDto
 import com.blaise.paymentlater.dto.shared.TransactionOverviewFilterDto
 import com.blaise.paymentlater.service.v1.admin.AnalyticServiceV1
 import io.swagger.v3.oas.annotations.Operation
@@ -120,11 +122,69 @@ class AnalyticControllerV1(
 
         return analyticService.getTransactionsOverview(filter)
     }
+
+    @GetMapping("/refunds/overview")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Get refunds overview",
+        description = "Get refunds overview",
+        security = [SecurityRequirement(name = "BearerToken")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Refunds overview",
+                content = [Content(schema = Schema(implementation = RefundOverviewPageResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            )
+        ]
+    )
+    fun getRefundsOverview(
+        @Parameter(description = "Start date")
+        @RequestParam(required = false) startDate: String?,
+
+        @Parameter(description = "End date")
+        @RequestParam(required = false) endDate: String?,
+
+        @Parameter(description = "Merchant id")
+        @RequestParam(required = false) merchantId: String?,
+
+        @Parameter(description = "Refund currencies")
+        @RequestParam(required = false) currencies: List<String>?,
+        @Parameter(description = "Page number")
+        @RequestParam(required = false, defaultValue = "0") page: Int,
+
+        @Parameter(description = "Page size")
+        @RequestParam(required = false, defaultValue = "20") size: Int,
+    ): PageResponseDto<RefundOverviewResponseDto> {
+        val filter = RefundOverviewFilterDto(
+            start = startDate?.let { Instant.parse(it) },
+            end = endDate?.let { Instant.parse(it) },
+            merchantId = merchantId?.let { ObjectId(it) },
+            currencies = currencies?.map { Currency.valueOf(it) },
+            page = page,
+            size = size
+        )
+
+        return analyticService.getRefundsOverview(filter)
+    }
 }
 
 @Schema(description = "Paginated response of Transaction Overview")
 private data class TransactionOverviewPageResponseDto(
     val content: List<TransactionOverviewResponseDto>,
+    val totalPages: Int,
+    val totalElements: Long,
+    val page: Int,
+    val size: Int
+)
+
+private data class RefundOverviewPageResponseDto(
+    val content: List<RefundOverviewResponseDto>,
     val totalPages: Int,
     val totalElements: Long,
     val page: Int,
