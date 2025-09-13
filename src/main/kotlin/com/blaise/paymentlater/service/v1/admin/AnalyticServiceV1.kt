@@ -3,6 +3,7 @@ package com.blaise.paymentlater.service.v1.admin
 import com.blaise.paymentlater.dto.response.MerchantOverviewResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.RefundOverviewResponseDto
+import com.blaise.paymentlater.dto.response.SystemHealthResponseDto
 import com.blaise.paymentlater.dto.response.TransactionOverviewResponseDto
 import com.blaise.paymentlater.dto.shared.MerchantOverviewFilterDto
 import com.blaise.paymentlater.dto.shared.RefundOverviewFilterDto
@@ -14,4 +15,6 @@ interface AnalyticServiceV1 {
     fun getTransactionsOverview(filter: TransactionOverviewFilterDto): PageResponseDto<TransactionOverviewResponseDto>
 
     fun getRefundsOverview(filter: RefundOverviewFilterDto): PageResponseDto<RefundOverviewResponseDto>
+
+    fun getSystemHealthOverview(windowHours: Long): SystemHealthResponseDto
 }

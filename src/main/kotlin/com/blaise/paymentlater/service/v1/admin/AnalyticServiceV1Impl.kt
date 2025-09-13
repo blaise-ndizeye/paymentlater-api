@@ -4,10 +4,12 @@ import com.blaise.paymentlater.domain.extension.toPageResponseDto
 import com.blaise.paymentlater.dto.response.MerchantOverviewResponseDto
 import com.blaise.paymentlater.dto.response.PageResponseDto
 import com.blaise.paymentlater.dto.response.RefundOverviewResponseDto
+import com.blaise.paymentlater.dto.response.SystemHealthResponseDto
 import com.blaise.paymentlater.dto.response.TransactionOverviewResponseDto
 import com.blaise.paymentlater.dto.shared.MerchantOverviewFilterDto
 import com.blaise.paymentlater.dto.shared.RefundOverviewFilterDto
 import com.blaise.paymentlater.dto.shared.TransactionOverviewFilterDto
+import com.blaise.paymentlater.repository.AdminRepository
 import com.blaise.paymentlater.repository.MerchantRepository
 import com.blaise.paymentlater.repository.RefundRepository
 import com.blaise.paymentlater.repository.TransactionRepository
@@ -18,6 +20,7 @@ private val log = KotlinLogging.logger {}
 
 @Service
 class AnalyticServiceV1Impl(
+    private val adminRepository: AdminRepository,
     private val merchantRepository: MerchantRepository,
     private val transactionRepository: TransactionRepository,
     private val refundRepository: RefundRepository
@@ -38,5 +41,10 @@ class AnalyticServiceV1Impl(
         return refundRepository.getRefundsOverview(filter)
             .toPageResponseDto()
             .also { log.info { "Found ${it.totalElements} refund overviews" } }
+    }
+
+    override fun getSystemHealthOverview(windowHours: Long): SystemHealthResponseDto {
+        return adminRepository.getSystemHealthOverview(windowHours)
+            .also { log.info { "Review system's health of $windowHours window-hours" } }
     }
 }

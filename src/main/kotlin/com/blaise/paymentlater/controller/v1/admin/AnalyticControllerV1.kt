@@ -2,11 +2,7 @@ package com.blaise.paymentlater.controller.v1.admin
 
 import com.blaise.paymentlater.domain.enum.Currency
 import com.blaise.paymentlater.domain.enum.TransactionStatus
-import com.blaise.paymentlater.dto.response.ApiErrorResponseDto
-import com.blaise.paymentlater.dto.response.MerchantOverviewResponseDto
-import com.blaise.paymentlater.dto.response.PageResponseDto
-import com.blaise.paymentlater.dto.response.RefundOverviewResponseDto
-import com.blaise.paymentlater.dto.response.TransactionOverviewResponseDto
+import com.blaise.paymentlater.dto.response.*
 import com.blaise.paymentlater.dto.shared.MerchantOverviewFilterDto
 import com.blaise.paymentlater.dto.shared.RefundOverviewFilterDto
 import com.blaise.paymentlater.dto.shared.TransactionOverviewFilterDto
@@ -20,10 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.bson.types.ObjectId
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
 @RestController
@@ -172,6 +165,33 @@ class AnalyticControllerV1(
 
         return analyticService.getRefundsOverview(filter)
     }
+
+    @GetMapping("/system/{windowHours}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "BearerToken")
+    @Operation(
+        summary = "Get system health overview",
+        description = "Get system health overview",
+        security = [SecurityRequirement(name = "BearerToken")],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "System health overview",
+                content = [Content(schema = Schema(implementation = SystemHealthResponseDto::class))]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized",
+                content = [Content(schema = Schema(implementation = ApiErrorResponseDto::class))]
+            )
+        ]
+    )
+    fun getSystemHealth(
+        @Parameter(description = "Look-back from now in hours")
+        @PathVariable windowHours: String
+    ): SystemHealthResponseDto = analyticService.getSystemHealthOverview(
+        windowHours.toLongOrNull() ?: 24
+    )
 }
 
 @Schema(description = "Paginated response of Transaction Overview")
