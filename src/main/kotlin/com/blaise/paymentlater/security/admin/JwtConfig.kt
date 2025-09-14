@@ -27,7 +27,7 @@ import java.util.Date
  * - Bearer token format support
  * 
  * **Token Lifecycle**:
- * 1. Generate access + refresh token pair on login
+ * 1. Generate access and refresh token pair on login
  * 2. Use access token for API authentication
  * 3. Refresh using refresh token when access expires
  * 4. Invalidate refresh token on logout
