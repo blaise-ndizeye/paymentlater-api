@@ -19,6 +19,29 @@ import java.time.Instant
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * Implementation of admin merchant management service.
+ * 
+ * Provides administrative control over merchant accounts with comprehensive
+ * management capabilities:
+ * 
+ * **Core Operations**:
+ * - Merchant account activation and deactivation
+ * - Profile updates including roles and contact information
+ * - Administrative search and filtering of merchants
+ * - Status management and compliance oversight
+ * 
+ * **Business Rules**:
+ * - Only admins can perform merchant management operations
+ * - Account status changes are tracked with timestamps
+ * - Role updates support multiple user roles per merchant
+ * - All changes are logged for audit purposes
+ * 
+ * **Integration**:
+ * - Uses MerchantAuthServiceV1 for core merchant operations
+ * - Integrates with repository layer for data persistence
+ * - Supports paginated responses for large merchant lists
+ */
 @Service
 class ManageMerchantServiceV1Impl(
     private val merchantRepository: MerchantRepository,

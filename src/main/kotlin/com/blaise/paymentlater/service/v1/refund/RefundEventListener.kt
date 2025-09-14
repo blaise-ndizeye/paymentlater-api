@@ -14,17 +14,47 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 import java.net.SocketTimeoutException
 
+/**
+ * Event listener for refund status updates with webhook and email notifications.
+ * 
+ * Handles refund lifecycle events for approved and rejected refunds:
+ * 
+ * **Event Processing**:
+ * - Refund approval/rejection notifications
+ * - Conditional webhook payload generation
+ * - Status-specific email delivery
+ * - Asynchronous processing for performance
+ * 
+ * **Notification Types**:
+ * - REFUND_APPROVED: Success notifications with approval timestamps
+ * - REFUND_REJECTED: Rejection notifications with admin reasoning
+ * - Dynamic payload generation based on refund status
+ * 
+ * **Reliability Features**:
+ * - Automatic webhook retry with exponential backoff
+ * - Comprehensive error handling for failed deliveries
+ * - Non-blocking merchant notifications
+ */
 @Component
 class RefundEventListener(
     private val mailService: MailService,
     private val webClient: WebClient
 ) {
 
+    /**
+     * Handle refund status update events with appropriate notifications.
+     * 
+     * Routes refund events to appropriate notification channels based on status:
+     * - APPROVED: Sends approval webhook and email
+     * - REJECTED: Sends rejection webhook and email with reasoning
+     * 
+     * @param event Refund update event containing refund and merchant details
+     */
     @Async("taskExecutor")
     @EventListener
     fun sendRefundUpdateEvent(event: RefundUpdateEventDto) {
         if (event.refund.status == RefundStatus.APPROVED) {
-            sendRefundApprovedEventWebhook(WebhookEventType.REFUND_APPROVED, event)
+            sendRefundEventWebhook(WebhookEventType.REFUND_APPROVED, event)
             mailService.sendRefundApprovedEmail(
                 to = event.merchant.email,
                 name = event.merchant.name,
@@ -33,7 +63,7 @@ class RefundEventListener(
                 reason = event.refund.reason
             )
         } else if (event.refund.status == RefundStatus.REJECTED) {
-            sendRefundApprovedEventWebhook(WebhookEventType.REFUND_REJECTED, event)
+            sendRefundEventWebhook(WebhookEventType.REFUND_REJECTED, event)
             mailService.sendRefundRejectedEmail(
                 to = event.merchant.email,
                 name = event.merchant.name,
@@ -46,12 +76,22 @@ class RefundEventListener(
 
     }
 
+    /**
+     * Send refund webhook notification with status-specific payload.
+     * 
+     * Constructs dynamic webhook payload based on refund status and
+     * delivers to merchant endpoint with a retry mechanism.
+     * 
+     * @param eventType Webhook event type (REFUND_APPROVED/REFUND_REJECTED)
+     * @param event Refund update event
+     * @throws RuntimeException if webhook delivery fails after all retries
+     */
     @Retryable(
         value = [WebClientResponseException::class, SocketTimeoutException::class],
         maxAttempts = 3,
         backoff = Backoff(delay = 2000, multiplier = 2.0)
     )
-    fun sendRefundApprovedEventWebhook(eventType: WebhookEventType, event: RefundUpdateEventDto) {
+    fun sendRefundEventWebhook(eventType: WebhookEventType, event: RefundUpdateEventDto) {
         val payload = mutableMapOf(
             "eventType" to eventType.name,
             "paymentIntentId" to event.paymentIntent.id.toHexString(),

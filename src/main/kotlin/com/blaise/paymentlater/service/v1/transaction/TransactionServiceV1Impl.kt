@@ -28,6 +28,29 @@ import org.springframework.web.server.ResponseStatusException
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * Implementation of transaction management service with comprehensive business logic.
+ * 
+ * Orchestrates transaction operations and refund request processing:
+ * 
+ * **Core Responsibilities**:
+ * - Transaction CRUD operations with proper authorization
+ * - Refund request creation with financial validation
+ * - Multi-service integration for complex business flows
+ * - Role-based access control for transaction viewing
+ * 
+ * **Refund Request Logic**:
+ * - Validates transaction and payment intent eligibility
+ * - Calculates remaining refundable amounts
+ * - Prevents over-refunding through cumulative amount tracking
+ * - Creates pending refund records for admin approval
+ * 
+ * **Financial Safety**:
+ * - All refund operations are transactional for consistency
+ * - Comprehensive validation of refund amounts and eligibility
+ * - Proper authorization checks for merchant-specific operations
+ * - Detailed logging for audit trails and debugging
+ */
 @Service
 class TransactionServiceV1Impl(
     private val transactionRepository: TransactionRepository,

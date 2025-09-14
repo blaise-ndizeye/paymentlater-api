@@ -13,12 +13,42 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 import java.net.SocketTimeoutException
 
+/**
+ * Event listener for payment confirmation events with webhook and email notifications.
+ * 
+ * Handles payment lifecycle events that require external communication:
+ * 
+ * **Notification Channels**:
+ * - Webhook HTTP callbacks to merchant endpoints
+ * - Email notifications for payment confirmations
+ * - Asynchronous processing for improved performance
+ * 
+ * **Reliability Features**:
+ * - Automatic retry mechanism for webhook failures
+ * - Exponential backoff strategy for resilient delivery
+ * - Comprehensive error handling and logging
+ * - Non-blocking email and webhook delivery
+ * 
+ * **Webhook Integration**:
+ * - Standardized payload format for merchant systems
+ * - Support for various webhook event types
+ * - HTTP status validation and error handling
+ */
 @Component
 class PaymentEventListener(
     private val webClient: WebClient,
     private val mailService: MailService,
 ) {
 
+    /**
+     * Handle payment confirmation event with webhook and email notifications.
+     * 
+     * Processes PaymentIntentConfirmedEventDto asynchronously to:
+     * - Send webhook notification to merchant endpoint
+     * - Send email confirmation to merchant
+     * 
+     * @param event Payment confirmation event with transaction details
+     */
     @Async("taskExecutor")
     @EventListener
     fun sendConfirmPaymentIntentEvent(event: PaymentIntentConfirmedEventDto) {
@@ -35,6 +65,15 @@ class PaymentEventListener(
         )
     }
 
+    /**
+     * Send webhook notification to merchant endpoint with retry mechanism.
+     * 
+     * Delivers standardized webhook payload to merchant's configured endpoint
+     * with automatic retry on failures and exponential backoff.
+     * 
+     * @param event Payment confirmation event
+     * @throws RuntimeException if webhook delivery fails after all retries
+     */
     @Retryable(
         value = [WebClientResponseException::class, SocketTimeoutException::class],
         maxAttempts = 3,
