@@ -17,9 +17,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
  * 
  * **Common Usage Examples**:
  *
+ *```kotlin
  * @PreAuthorize("hasRole('ADMIN')")
  * fun adminOnlyMethod() { ... }
- * ```
+ *
  * @PreAuthorize("hasRole('ADMIN') or #userId == authentication.name")
  * fun userOrAdminMethod(userId: String) { ... }
  * 
