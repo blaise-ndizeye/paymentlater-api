@@ -22,6 +22,22 @@ import org.springframework.web.server.ResponseStatusException
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * Implementation of merchant authentication with secure API key management.
+ * 
+ * Provides comprehensive merchant management with focus on security:
+ * - Cryptographically secure API key generation
+ * - Double-hashing security: digest for lookups + bcrypt for verification
+ * - Event-driven registration process with email notifications
+ * - Transactional operations for data consistency
+ * - Role-based authorization integration
+ * 
+ * **Security Architecture**:
+ * - API keys are generated using secure random algorithms
+ * - Keys are both digested (for fast lookups) and bcrypt hashed (for security)
+ * - Email notifications are sent asynchronously via event publishing
+ * - Webhook URLs are validated and stored for payment notifications
+ */
 @Service
 class MerchantAuthServiceV1Impl(
     private val merchantRepository: MerchantRepository,

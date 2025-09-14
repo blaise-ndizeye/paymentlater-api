@@ -19,6 +19,22 @@ import org.springframework.web.server.ResponseStatusException
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * Implementation of admin authentication service with security best practices.
+ * 
+ * Provides secure admin authentication using:
+ * - BCrypt password hashing for secure credential storage
+ * - JWT access tokens with configurable expiration
+ * - Secure refresh token management with rotation
+ * - Comprehensive audit logging for security monitoring
+ * - Spring Security integration for context-aware authentication
+ * 
+ * **Security Features**:
+ * - Password validation with timing attack protection
+ * - Automatic refresh token rotation on use
+ * - Failed login attempt logging
+ * - Transactional token operations for consistency
+ */
 @Service
 class AdminAuthServiceV1Impl(
     private val adminRepository: AdminRepository,

@@ -29,6 +29,28 @@ import java.time.Instant
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * Implementation of refund processing with comprehensive business logic.
+ * 
+ * Orchestrates complex refund workflows involving multiple services:
+ * - Financial validation and amount calculations
+ * - Transaction state management and reversals
+ * - Payment intent status transitions
+ * - Admin authorization and audit trails
+ * - Event-driven email notifications
+ * 
+ * **Key Business Logic**:
+ * - Prevents over-refunding by tracking cumulative refund amounts
+ * - Automatically determines payment status (PARTIALLY_REFUNDED/REFUNDED)
+ * - Creates reverse transactions for approved refunds
+ * - Maintains referential integrity across payment entities
+ * - Ensures proper authorization for all refund operations
+ * 
+ * **Transaction Safety**:
+ * - All refund operations are transactional for consistency
+ * - Rollback occurs if any step fails during approval
+ * - Event publishing happens after successful database commits
+ */
 @Service
 class RefundServiceV1Impl(
     private val refundRepository: RefundRepository,
