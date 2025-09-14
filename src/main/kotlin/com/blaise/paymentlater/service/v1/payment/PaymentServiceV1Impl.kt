@@ -27,6 +27,22 @@ import java.time.Instant
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * Implementation of core payment processing service.
+ * 
+ * Handles payment lifecycle management with comprehensive validation,
+ * authorization, and event publishing. Integrates with:
+ * - Payment intent and transaction repositories
+ * - Merchant authentication service
+ * - Application event publishing for webhooks
+ * 
+ * **Key Responsibilities**:
+ * - Payment intent CRUD operations with role-based access
+ * - Transaction creation and confirmation
+ * - Automatic payment expiration handling
+ * - Event-driven webhook notifications
+ * - Comprehensive business rule validation
+ */
 @Service
 class PaymentServiceV1Impl(
     private val paymentIntentRepository: PaymentIntentRepository,
