@@ -11,6 +11,27 @@ import org.springframework.web.server.ResponseStatusException
 import java.util.Base64
 import java.util.Date
 
+/**
+ * JWT token configuration and management for admin authentication.
+ * 
+ * Handles creation, validation, and parsing of JWT tokens with:
+ * 
+ * **Token Types**:
+ * - ACCESS: Short-lived tokens (15 hours) for API access
+ * - REFRESH: Long-lived tokens (30 days) for token renewal
+ * 
+ * **Security Features**:
+ * - HMAC-SHA256 signing with base64-encoded secret
+ * - Token type validation to prevent misuse
+ * - Automatic expiration handling
+ * - Bearer token format support
+ * 
+ * **Token Lifecycle**:
+ * 1. Generate access + refresh token pair on login
+ * 2. Use access token for API authentication
+ * 3. Refresh using refresh token when access expires
+ * 4. Invalidate refresh token on logout
+ */
 @Component
 class JwtConfig(
     @Value("\${jwt.secret}") private val jwtSecret: String
