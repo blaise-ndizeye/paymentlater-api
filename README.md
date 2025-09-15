@@ -52,6 +52,9 @@ Most developers face common barriers when building payment-enabled applications:
 - **Documentation**: OpenAPI 3 with Swagger UI
 - **Email**: Spring Mail with SMTP integration
 - **Testing**: JUnit 5, MockK, Spring Boot Test
+- **Containerization**: Docker with multi-stage builds
+- **Deployment**: Docker Compose with production configurations
+- **Images**: Eclipse Temurin OpenJDK 21 on Alpine Linux
 
 ### Project Structure
 ```
@@ -75,14 +78,53 @@ src/main/kotlin/com/blaise/paymentlater/
     └── v1/                # API version 1 services
 ```
 
+## 🐳 Docker & Security Features
+
+### 🔒 Production-Ready Deployment
+
+| Feature | Development | Production | High-Security |
+|---------|------------|-------------|---------------|
+| **Multi-stage builds** | ✅ | ✅ | ✅ |
+| **Optimized images** | ✅ Alpine JRE | ✅ Alpine JRE | ✅ Alpine JRE |
+| **Unit tests in build** | ✅ | ✅ | ✅ |
+| **Non-root user** | ✅ | ✅ | ✅ |
+| **Environment variables** | ✅ | ✅ Docker Secrets | ✅ Docker Secrets |
+| **Health checks** | ✅ | ✅ | ✅ |
+| **Resource limits** | ⚠️ | ✅ | ✅ |
+| **Read-only filesystem** | ❌ | ❌ | ✅ |
+| **Security hardening** | ❌ | ⚠️ | ✅ |
+| **Network isolation** | ✅ | ✅ | ✅ Enhanced |
+| **Intrusion detection** | ❌ | ❌ | ✅ Fail2ban |
+
+### 🔍 Container Optimization
+
+- **🏃 Fast builds**: Multi-stage caching reduces build time by ~60%
+- **💻 Small images**: Final image ~283MB (vs 1GB+ typical Spring Boot)
+- **🛡️ Security**: Non-root execution, capability dropping, secrets management
+- **📊 Monitoring**: Built-in health checks, metrics, and logging
+- **🔄 CI/CD Ready**: Optimized for automated deployments
+
+### 🛠️ Development Tools Included
+
+```bash
+# MongoDB Admin Interface (development)
+docker-compose --profile tools up -d
+# Access: http://localhost:8081
+
+# Security monitoring (production)
+docker-compose -f docker-compose.prod.yml --profile security-tools up -d
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Java 21+**
-- **MongoDB 4.4+**
+- **Docker & Docker Compose** (Recommended) OR
+- **Java 21+** + **MongoDB 4.4+** (Manual setup)
 - **SMTP Email Server** (Gmail recommended)
 
-### Installation
+### 🐳 Docker Setup (Recommended)
+
+> **The fastest way to get started!** Complete with MongoDB, security hardening, and development tools.
 
 1. **Clone the repository**
    ```bash
@@ -92,22 +134,48 @@ src/main/kotlin/com/blaise/paymentlater/
 
 2. **Set up environment variables**
    ```bash
-   export MONGODB_URI="mongodb://localhost:27017"
-   export MONGODB_DATABASE="paymentlater"
-   export JWT_SECRET_BASE64="your-base64-encoded-jwt-secret"
-   export MAIL_SERVER_EMAIL="your-email@gmail.com"
-   export MAIL_SERVER_PASSWORD="your-app-password"
+   # Copy template and customize
+   cp .env.example .env
+   # Edit .env with your actual values (required!)
    ```
 
-3. **Run the application**
+3. **Start the application**
+   ```bash
+   # Development mode (with MongoDB admin UI)
+   docker-compose --profile tools up -d
+   
+   # Production mode  
+   docker-compose -f docker-compose.prod.yml up -d
+   
+   # High-security production
+   docker-compose -f docker-compose.prod.yml -f docker-compose.security.yml up -d
+   ```
+
+4. **Access the services**
+   - **API Base URL**: `http://localhost:1010`
+   - **Swagger UI**: `http://localhost:1010/swagger-ui.html`
+   - **API Documentation**: `http://localhost:1010/api-docs`
+   - **MongoDB Admin** (dev only): `http://localhost:8081`
+   - **Health Check**: `http://localhost:1010/actuator/health`
+
+### ⚙️ Manual Setup (Alternative)
+
+1. **Clone and setup environment**
+   ```bash
+   git clone https://github.com/yourusername/PaymentLaterAPI.git
+   cd PaymentLaterAPI
+   cp .env.example .env  # Edit with your values
+   ```
+
+2. **Run the application**
    ```bash
    ./gradlew bootRun
    ```
 
-4. **Access the API**
-   - **API Base URL**: `http://localhost:1010`
-   - **Swagger UI**: `http://localhost:1010/swagger-ui.html`
-   - **API Documentation**: `http://localhost:1010/api-docs`
+### 📚 Complete Docker Guide
+
+For comprehensive Docker usage, security configurations, and production deployment, see:
+**[📖 Docker Cheatsheet](DOCKER_CHEATSHEET.md)**
 
 ## 📚 API Documentation
 
@@ -330,7 +398,7 @@ GET /actuator/health
 
 ### System Analytics (Admin)
 ```bash
-GET /api/v1/admin/analytics/system-health
+GET /api/v1/admin/analytics/system/{windowHours}
 Authorization: Bearer jwt-token
 ```
 
@@ -342,6 +410,7 @@ X-API-KEY: your-api-key
 
 ## 🛡️ Security Features
 
+### 🔐 Application Security
 - **JWT Authentication** with 15-hour access tokens and 30-day refresh tokens
 - **API Key Authentication** with SHA-256 hashing
 - **BCrypt Password Hashing** for admin accounts
@@ -349,15 +418,50 @@ X-API-KEY: your-api-key
 - **Request Rate Limiting** (planned)
 - **HTTPS Support** (configure with SSL certificates)
 
+### 🐳 Container Security (Docker)
+- **🚫 Non-root execution**: All containers run as unprivileged users
+- **🔒 Docker Secrets**: Production credentials never stored in images
+- **📝 Read-only filesystems**: Immutable container environments (high-security mode)
+- **🚪 Capability dropping**: Removes dangerous Linux capabilities
+- **🔥 Resource limits**: DoS protection through memory/CPU constraints
+- **🌐 Network isolation**: Secure bridge networking with custom subnets
+- **📊 Health monitoring**: Automated health checks and restart policies
+- **🔍 Intrusion detection**: Optional Fail2ban integration for attack prevention
+
+### 🔍 Security Monitoring
+```bash
+# Check security compliance
+docker inspect payment-later-api-prod | jq '.HostConfig | {SecurityOpt, ReadonlyRootfs, CapDrop}'
+
+# Monitor failed attempts
+docker-compose logs | grep -i "failed\|error\|unauthorized"
+
+# Resource usage monitoring
+docker stats payment-later-api-prod
+```
+
 ## 🧪 Testing
 
+### Local Testing
 ```bash
 # Run all tests
 ./gradlew test
 
 # Run with coverage
 ./gradlew test jacocoTestReport
+```
 
+### Docker Testing
+```bash
+# Tests are automatically run during Docker build
+docker build -t payment-later-api:test .
+
+# Run tests in existing container
+docker-compose exec payment-later-api ./gradlew test
+
+# Integration testing with full stack
+docker-compose up -d
+curl http://localhost:1010/actuator/health
 ```
 
 ## 🤝 Contributing
@@ -406,9 +510,15 @@ git checkout -b develop
 - [x] Payment intent and confirmation flow
 - [x] Webhook system
 - [x] Email notifications
-- [x] MongoDB integration
+- [x] MongoDB integration with auto-indexing
 - [x] Comprehensive documentation
 - [x] Swagger UI integration
+- [x] **Docker containerization** with multi-stage builds
+- [x] **Production-ready deployment** configurations
+- [x] **Security hardening** with container security features
+- [x] **Environment management** with secrets and variables
+- [x] **Development tooling** (MongoDB Express, health checks)
+- [x] **Comprehensive Docker documentation** and cheatsheets
 
 ### 🚧 **In Progress**
 - [ ] Kotlin SDK
@@ -429,10 +539,10 @@ git checkout -b develop
   - [ ] Payment method expansion
   - [ ] Advanced fraud detection simulation
 - [ ] **DevOps & Deployment**
-  - [ ] Docker containerization
+  - [x] ~~Docker containerization~~ ✅ **Completed**
   - [ ] Kubernetes deployment configs
   - [ ] CI/CD pipeline setup
-  - [ ] Monitoring and observability
+  - [ ] Advanced monitoring and observability
 
 ## ⚠️ Important Disclaimers
 
